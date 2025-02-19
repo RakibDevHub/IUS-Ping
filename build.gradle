@@ -1,0 +1,60 @@
+plugins {
+    id 'java'
+    id 'war'
+    id 'jacoco'
+}
+
+group = 'com.ius.ping'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // Jakarta EE API (Servlets, JSP, etc.)
+    providedCompile 'jakarta.platform:jakarta.jakartaee-api:10.0.0'
+
+    // Apache Tomcat (Servlet & JSP Support)
+    providedCompile 'org.apache.tomcat.embed:tomcat-embed-core:11.0.0'
+    providedCompile 'org.apache.tomcat.embed:tomcat-embed-jasper:11.0.0'
+
+    // Oracle JDBC Driver (Change to your version if needed)
+    implementation 'com.oracle.database.jdbc:ojdbc11:21.10.0.0'
+
+    // JSTL (for JSP expressions like <c:forEach>)
+    implementation 'jakarta.servlet.jsp.jstl:jakarta.servlet.jsp.jstl-api:3.0.0'
+    runtimeOnly 'org.glassfish.web:jakarta.servlet.jsp.jstl:3.0.1'
+
+    // Logging
+    implementation 'org.slf4j:slf4j-api:2.0.9'
+    implementation 'org.slf4j:slf4j-simple:2.0.9'
+
+    // JUnit for testing
+    testImplementation 'junit:junit:4.13.2'
+
+    // Gson
+    implementation 'com.google.code.gson:gson:2.10.1'
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+tasks.withType(Test) {
+    useJUnit()
+}
+
+war {
+    archiveFileName = "${project.name}.war"
+}
+
+jacoco {
+    toolVersion = "0.8.10"
+}
+
+jacocoTestReport {
+    reports {
+        xml.required = true
+        html.required = true
+    }
+}
