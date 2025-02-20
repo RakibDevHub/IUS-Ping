@@ -1,7 +1,8 @@
-package com.ius.ping.servlet;
+package com.rakibdevhub.iusping.servlet;
 
-import com.ius.ping.config.DatabaseConfig;
-import com.ius.ping.model.StudentModel;
+import com.rakibdevhub.iusping.config.DatabaseConfig;
+import com.rakibdevhub.iusping.model.StudentModel;
+import com.rakibdevhub.iusping.model.TeacherModel;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -17,25 +18,27 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-@WebServlet("/teacher/dashboard")
-public class TeacherDashboardServlet extends HttpServlet {
+@WebServlet("/admin/dashboard")
+public class AdminDashboardServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
         HttpSession session = request.getSession(false);
-        if (session == null || !"teacher".equals(session.getAttribute("role"))) {
+        if (session == null || !"admin".equals(session.getAttribute("role"))) {
             response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
 
         List<StudentModel> students = getStudentsFromDatabase();
+        List<TeacherModel> teachers = getTeachersFromDatabase();
 
         request.setAttribute("students", students);
+        request.setAttribute("teachers", teachers);
         request.setAttribute("role", session.getAttribute("role"));
 
-        request.getRequestDispatcher("/teacher_dashboard.jsp").forward(request, response);
+        request.getRequestDispatcher("/admin_dashboard.jsp").forward(request, response);
     }
 
     private List<StudentModel> getStudentsFromDatabase() {
@@ -56,5 +59,23 @@ public class TeacherDashboardServlet extends HttpServlet {
             e.printStackTrace();
         }
         return students;
+    }
+
+    private List<TeacherModel> getTeachersFromDatabase() {
+        List<TeacherModel> teachers = new ArrayList<>();
+        try (Connection conn = DatabaseConfig.getConnection(); PreparedStatement stmt = conn.prepareStatement("SELECT teacher_id, name, email FROM teachers"); ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                TeacherModel teacher = new TeacherModel(
+                        rs.getInt("teacher_id"),
+                        rs.getString("name"),
+                        rs.getString("email")
+                );
+                teachers.add(teacher);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return teachers;
     }
 }

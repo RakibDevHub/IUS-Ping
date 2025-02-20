@@ -1,4 +1,4 @@
-package com.ius.ping.model;
+package com.rakibdevhub.iusping.model;
 
 public class StudentModel {
 

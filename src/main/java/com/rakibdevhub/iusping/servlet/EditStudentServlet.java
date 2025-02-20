@@ -1,7 +1,7 @@
-package com.ius.ping.servlet;
+package com.rakibdevhub.iusping.servlet;
 
-import com.ius.ping.config.DatabaseConfig;
-import com.ius.ping.model.StudentModel;
+import com.rakibdevhub.iusping.config.DatabaseConfig;
+import com.rakibdevhub.iusping.model.StudentModel;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;

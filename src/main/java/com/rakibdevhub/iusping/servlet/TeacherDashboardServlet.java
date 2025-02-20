@@ -1,7 +1,7 @@
-package com.ius.ping.servlet;
+package com.rakibdevhub.iusping.servlet;
 
-import com.ius.ping.config.DatabaseConfig;
-import com.ius.ping.model.StudentModel;
+import com.rakibdevhub.iusping.config.DatabaseConfig;
+import com.rakibdevhub.iusping.model.StudentModel;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -14,28 +14,35 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
-@WebServlet("/student/dashboard")
-public class StudentDashboardServlet extends HttpServlet {
+@WebServlet("/teacher/dashboard")
+public class TeacherDashboardServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
         HttpSession session = request.getSession(false);
-        if (session == null || !"student".equals(session.getAttribute("role"))) {
+        if (session == null || !"teacher".equals(session.getAttribute("role"))) {
             response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
 
-        String studentId = (String) session.getAttribute("studentId"); // Retrieve studentId from session
+        List<StudentModel> students = getStudentsFromDatabase();
 
-        try (Connection conn = DatabaseConfig.getConnection(); PreparedStatement stmt = conn.prepareStatement("SELECT * FROM students WHERE student_id = ?")) {
+        request.setAttribute("students", students);
+        request.setAttribute("role", session.getAttribute("role"));
 
-            stmt.setString(1, studentId);
-            ResultSet rs = stmt.executeQuery();
+        request.getRequestDispatcher("/teacher_dashboard.jsp").forward(request, response);
+    }
 
-            if (rs.next()) {
+    private List<StudentModel> getStudentsFromDatabase() {
+        List<StudentModel> students = new ArrayList<>();
+        try (Connection conn = DatabaseConfig.getConnection(); PreparedStatement stmt = conn.prepareStatement("SELECT id, student_id, name, department, phone_number FROM students"); ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
                 StudentModel student = new StudentModel(
                         rs.getInt("id"),
                         rs.getString("student_id"),
@@ -43,14 +50,11 @@ public class StudentDashboardServlet extends HttpServlet {
                         rs.getString("department"),
                         rs.getString("phone_number")
                 );
-                request.setAttribute("student", student);
-                request.getRequestDispatcher("/student_dashboard.jsp").forward(request, response);
-            } else {
-                response.sendRedirect(request.getContextPath() + "/home?error=StudentNotFound");
+                students.add(student);
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            response.sendRedirect(request.getContextPath() + "/home?error=DatabaseError");
         }
+        return students;
     }
 }

@@ -1,4 +1,4 @@
-package com.ius.ping.filter;
+package com.rakibdevhub.iusping.filter;
 
 import java.io.IOException;
 import jakarta.servlet.Filter;

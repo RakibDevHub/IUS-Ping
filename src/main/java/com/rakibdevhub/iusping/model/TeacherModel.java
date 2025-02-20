@@ -1,5 +1,5 @@
 // Teacher.java
-package com.ius.ping.model;
+package com.rakibdevhub.iusping.model;
 
 public class TeacherModel {
     private int id; // Primary key

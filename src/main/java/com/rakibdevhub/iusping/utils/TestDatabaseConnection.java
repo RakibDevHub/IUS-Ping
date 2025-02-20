@@ -1,8 +1,8 @@
-package com.ius.ping.util;
+package com.rakibdevhub.iusping.utils;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import com.ius.ping.config.DatabaseConfig;
+import com.rakibdevhub.iusping.config.DatabaseConfig;
 
 public class TestDatabaseConnection {
     public static void main(String[] args) {

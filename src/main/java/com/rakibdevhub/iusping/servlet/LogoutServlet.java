@@ -1,4 +1,4 @@
-package com.ius.ping.servlet;
+package com.rakibdevhub.iusping.servlet;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;

@@ -1,4 +1,4 @@
-package com.ius.ping.servlet;
+package com.rakibdevhub.iusping.servlet;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -13,9 +13,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
-import com.ius.ping.config.DatabaseConfig;
-import com.ius.ping.model.StudentModel;
-import com.ius.ping.util.SMSSender;
+import com.rakibdevhub.iusping.config.DatabaseConfig;
+import com.rakibdevhub.iusping.model.StudentModel;
+import com.rakibdevhub.iusping.utils.SmsManager;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -171,9 +171,9 @@ public class SendMessageServlet extends HttpServlet {
                 return;
             }
 
-            boolean smsSent = false; // Initialize to false
-            if (studentPhoneNumber != null && !studentPhoneNumber.isEmpty()) { // Check if phone number is valid
-                smsSent = SMSSender.sendSMS(studentPhoneNumber, message);
+            boolean smsSent = false;
+            if (studentPhoneNumber != null && !studentPhoneNumber.isEmpty()) {
+                smsSent = SmsManager.sendSMS(studentPhoneNumber, message);
             } else {
                 logger.warn("Invalid phone number for studentId={}", studentId);
                 session.setAttribute("errorMessage", "Invalid phone number.");
@@ -185,7 +185,7 @@ public class SendMessageServlet extends HttpServlet {
                 logger.info("Message sent successfully: studentId={}", studentId);
                 session.setAttribute("successMessage", "Message sent successfully!");
             } else {
-                logger.error("Failed to send SMS (POST): studentId= {}, phoneNumber= {}", studentId, studentPhoneNumber);
+                logger.error("Failed to send SMS (POST): studentId= {}", studentId);
                 session.setAttribute("errorMessage", "Failed to send SMS.");
             }
 

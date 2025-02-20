@@ -4,7 +4,7 @@ plugins {
     id 'jacoco'
 }
 
-group = 'com.ius.ping'
+group = 'com.rakibdevhub.iusping'
 
 repositories {
     mavenCentral()
