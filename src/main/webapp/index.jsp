@@ -6,6 +6,7 @@
 <%
     String role = (String) request.getAttribute("role");
 %>
+
 <!DOCTYPE html>
 <html lang="en">
     <head>

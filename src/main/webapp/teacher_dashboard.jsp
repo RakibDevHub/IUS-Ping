@@ -1,6 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="jakarta.servlet.http.HttpSession" %>
-<%@ page import="com.ius.ping.model.StudentModel" %>
+<%@ page import="com.rakibdevhub.iusping.model.StudentModel" %>
 <%@ page import="java.util.List" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%
