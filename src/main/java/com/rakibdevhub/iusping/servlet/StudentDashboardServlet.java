@@ -60,8 +60,10 @@ public class StudentDashboardServlet extends HttpServlet {
                             rs.getInt("id"),
                             rs.getString("student_id"),
                             rs.getString("name"),
+                            rs.getString("batch"),
                             rs.getString("department"),
-                            rs.getString("phone_number")
+                            rs.getString("phone_number"),
+                            null
                     );
                     request.setAttribute("student", student);
                     request.getRequestDispatcher("/student_dashboard.jsp").forward(request, response);
@@ -71,7 +73,7 @@ public class StudentDashboardServlet extends HttpServlet {
             }
 
         } catch (SQLException e) {
-            logger.error("Database error retrieving student data.", e); // Log the exception
+            logger.error("Database error retrieving student data.", e);
             response.sendRedirect(request.getContextPath() + "/login?error=DatabaseError");
         }
     }

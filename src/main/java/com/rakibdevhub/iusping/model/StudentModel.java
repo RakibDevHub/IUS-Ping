@@ -5,19 +5,22 @@ public class StudentModel {
     private int id;
     private String studentId;
     private String name;
+    private String batch;
     private String department;
     private String phoneNumber;
+    private String status;
 
-    // Constructors, getters, and setters
     public StudentModel() {
     }
 
-    public StudentModel(int id, String studentId, String name, String department, String phoneNumber) {
+    public StudentModel(int id, String studentId, String name, String batch, String department, String phoneNumber, String status) {
         this.id = id;
         this.studentId = studentId;
         this.name = name;
+        this.batch = batch;
         this.department = department;
         this.phoneNumber = phoneNumber;
+        this.status = status;
     }
 
     public int getId() {
@@ -44,6 +47,14 @@ public class StudentModel {
         this.name = name;
     }
 
+    public String getBatch() {
+        return batch;
+    }
+
+    public void setBatch(String batch) {
+        this.batch = batch;
+    }
+
     public String getDepartment() {
         return department;
     }
@@ -58,5 +69,13 @@ public class StudentModel {
 
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }

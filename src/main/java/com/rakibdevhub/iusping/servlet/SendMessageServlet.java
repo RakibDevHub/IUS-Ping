@@ -65,8 +65,10 @@ public class SendMessageServlet extends HttpServlet {
                             rs.getInt("id"),
                             rs.getString("student_id"),
                             rs.getString("name"),
+                            rs.getString("batch"),
                             rs.getString("department"),
-                            rs.getString("phone_number")
+                            rs.getString("phone_number"),
+                            null
                     );
                     session.setAttribute("student", student);
                 } else {

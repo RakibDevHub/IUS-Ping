@@ -43,15 +43,17 @@ public class AdminDashboardServlet extends HttpServlet {
 
     private List<StudentModel> getStudentsFromDatabase() {
         List<StudentModel> students = new ArrayList<>();
-        try (Connection conn = DatabaseConfig.getConnection(); PreparedStatement stmt = conn.prepareStatement("SELECT id, student_id, name, department, phone_number FROM students"); ResultSet rs = stmt.executeQuery()) {
+        try (Connection conn = DatabaseConfig.getConnection(); PreparedStatement stmt = conn.prepareStatement("SELECT * FROM student"); ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
                 StudentModel student = new StudentModel(
                         rs.getInt("id"),
                         rs.getString("student_id"),
                         rs.getString("name"),
+                        rs.getString("batch"),
                         rs.getString("department"),
-                        rs.getString("phone_number")
+                        rs.getString("phone_number"),
+                        rs.getString("status")
                 );
                 students.add(student);
             }
@@ -63,11 +65,11 @@ public class AdminDashboardServlet extends HttpServlet {
 
     private List<TeacherModel> getTeachersFromDatabase() {
         List<TeacherModel> teachers = new ArrayList<>();
-        try (Connection conn = DatabaseConfig.getConnection(); PreparedStatement stmt = conn.prepareStatement("SELECT teacher_id, name, email FROM teachers"); ResultSet rs = stmt.executeQuery()) {
+        try (Connection conn = DatabaseConfig.getConnection(); PreparedStatement stmt = conn.prepareStatement("SELECT * FROM teacher"); ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
                 TeacherModel teacher = new TeacherModel(
-                        rs.getInt("teacher_id"),
+                        rs.getInt("id"),
                         rs.getString("name"),
                         rs.getString("email")
                 );

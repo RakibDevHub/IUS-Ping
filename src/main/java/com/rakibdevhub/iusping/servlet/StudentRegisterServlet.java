@@ -12,9 +12,13 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @WebServlet("/student/register")
 public class StudentRegisterServlet extends HttpServlet {
+
+    private static final Logger logger = LoggerFactory.getLogger(StudentRegisterServlet.class);
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -33,7 +37,6 @@ public class StudentRegisterServlet extends HttpServlet {
         String phoneNumber = request.getParameter("phoneNumber");
         String password = request.getParameter("password");
 
-        // Check if any field is missing
         if (studentId == null || studentId.trim().isEmpty()
                 || name == null || name.trim().isEmpty()
                 || batch == null || batch.trim().isEmpty()
@@ -41,41 +44,34 @@ public class StudentRegisterServlet extends HttpServlet {
                 || phoneNumber == null || phoneNumber.trim().isEmpty()
                 || password == null || password.trim().isEmpty()) {
 
-            response.sendRedirect(request.getContextPath() + "/student/register?error=MissingFields");
+            request.setAttribute("error", "MissingFields");
+            request.getRequestDispatcher("/student_register.jsp").forward(request, response);
             return;
         }
 
         try (Connection conn = DatabaseConfig.getConnection()) {
             if (studentExists(conn, studentId)) {
-                response.sendRedirect(request.getContextPath() + "/student/register?error=StudentExists");
+                request.setAttribute("error", "StudentExists");
+                request.getRequestDispatcher("/student_register.jsp").forward(request, response);
                 return;
             }
 
             String hashedPassword = hashPassword(password);
 
-            // ✅ Use CallableStatement to properly handle RETURNING INTO in Oracle
             String insertQuery = "BEGIN INSERT INTO student (student_id, name, batch, department, phone_number, password) "
                     + "VALUES (?, ?, ?, ?, ?, ?) RETURNING id INTO ?; END;";
 
             try (CallableStatement stmt = conn.prepareCall(insertQuery)) {
-
                 stmt.setString(1, studentId);
                 stmt.setString(2, name);
                 stmt.setString(3, batch);
                 stmt.setString(4, department);
                 stmt.setString(5, phoneNumber);
                 stmt.setString(6, hashedPassword);
-
-                // ✅ Register the output parameter correctly
                 stmt.registerOutParameter(7, java.sql.Types.INTEGER);
-
-                // ✅ Execute the statement
                 stmt.execute();
-
-                // ✅ Retrieve the generated ID
                 int studentDbId = stmt.getInt(7);
 
-                // ✅ Set session attributes
                 HttpSession session = request.getSession();
                 session.setAttribute("id", studentDbId);
                 session.setAttribute("role", "student");
@@ -84,8 +80,9 @@ public class StudentRegisterServlet extends HttpServlet {
                 return;
             }
         } catch (SQLException e) {
-            e.printStackTrace();
-            response.sendRedirect(request.getContextPath() + "/student/register?error=DatabaseError");
+            logger.error("Database error during student registration", e);
+            request.setAttribute("error", "DatabaseError");
+            request.getRequestDispatcher("/student_register.jsp").forward(request, response);
         }
     }
 
