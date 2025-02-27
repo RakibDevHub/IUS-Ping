@@ -41,11 +41,11 @@ public class LoginServlet extends HttpServlet {
             String query = "";
             switch (role) {
                 case "admin" ->
-                    query = "SELECT admin_id as id, username as name FROM admin WHERE email = ? AND password = ?";
+                    query = "SELECT * FROM admin WHERE email = ? AND password = ?";
                 case "teacher" ->
-                    query = "SELECT teacher_id as id, name FROM teachers WHERE email = ? AND password = ?";                
+                    query = "SELECT * FROM teacher WHERE email = ? AND password = ?";                
                 case "student" ->
-                    query = "SELECT id, name FROM students WHERE student_id = ? AND password = ?";
+                    query = "SELECT * FROM student WHERE student_id = ? AND password = ?";
                 default -> {
                     response.sendRedirect("login?error=Invalid role");
                     return;

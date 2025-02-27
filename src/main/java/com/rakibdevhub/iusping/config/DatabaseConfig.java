@@ -15,7 +15,7 @@ public class DatabaseConfig {
     private static String DRIVER;
 
     static {
-        try (InputStream input = DatabaseConfig.class.getClassLoader().getResourceAsStream("db.properties")) {
+        try (InputStream input = DatabaseConfig.class.getClassLoader().getResourceAsStream("config.properties")) {
 
             if (input == null) {
                 throw new RuntimeException("Database configuration file not found!");
@@ -26,10 +26,10 @@ public class DatabaseConfig {
             properties.load(input);
 
             // Get properties
-            URL = properties.getProperty("db.url");
-            USERNAME = properties.getProperty("db.username");
-            PASSWORD = properties.getProperty("db.password");
-            DRIVER = properties.getProperty("db.driver");
+            URL = properties.getProperty("database.url");
+            USERNAME = properties.getProperty("database.username");
+            PASSWORD = properties.getProperty("database.password");
+            DRIVER = properties.getProperty("database.driver");
 
             // Load database driver
             Class.forName(DRIVER);

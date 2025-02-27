@@ -25,7 +25,7 @@ public class SmsManager {
 
     static {
         Properties props = new Properties();
-        try (InputStream input = SmsManager.class.getClassLoader().getResourceAsStream("sms.properties")) {
+        try (InputStream input = SmsManager.class.getClassLoader().getResourceAsStream("config.properties")) {
             if (input == null) {
                 throw new RuntimeException("sms.properties file not found.");
             }

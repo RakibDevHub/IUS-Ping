@@ -34,6 +34,9 @@ dependencies {
 
     // Gson
     implementation 'com.google.code.gson:gson:2.10.1'
+
+    // Bcrypt
+    implementation 'org.mindrot:jbcrypt:0.4'
 }
 
 tasks.withType(JavaCompile) {

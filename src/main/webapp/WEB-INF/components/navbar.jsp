@@ -3,6 +3,7 @@
     <a href="<%= request.getContextPath()%>/home" class="text-lg font-bold">IUS Ping</a>
     <div>
         <% if (session.getAttribute("role") == null) { %>
+        <a href="<%= request.getContextPath()%>/student/register" class="mr-4">Student Register</a>
         <a href="login" class="mr-4">Login</a>
         <% } else {
             String role = (String) session.getAttribute("role");

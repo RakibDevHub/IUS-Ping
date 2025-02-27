@@ -50,7 +50,7 @@ public class StudentDashboardServlet extends HttpServlet {
     private void processStudentData(HttpServletRequest request, HttpServletResponse response, String studentId)
             throws ServletException, IOException {
 
-        try (Connection conn = DatabaseConfig.getConnection(); PreparedStatement stmt = conn.prepareStatement("SELECT * FROM students WHERE id = ?")) {
+        try (Connection conn = DatabaseConfig.getConnection(); PreparedStatement stmt = conn.prepareStatement("SELECT * FROM student WHERE id = ?")) {
 
             stmt.setString(1, studentId);
 
@@ -66,13 +66,13 @@ public class StudentDashboardServlet extends HttpServlet {
                     request.setAttribute("student", student);
                     request.getRequestDispatcher("/student_dashboard.jsp").forward(request, response);
                 } else {
-                    response.sendRedirect(request.getContextPath() + "/home?error=StudentNotFound");
+                    response.sendRedirect(request.getContextPath() + "/login?error=StudentNotFound");
                 }
             }
 
         } catch (SQLException e) {
             logger.error("Database error retrieving student data.", e); // Log the exception
-            response.sendRedirect(request.getContextPath() + "/home?error=DatabaseError");
+            response.sendRedirect(request.getContextPath() + "/login?error=DatabaseError");
         }
     }
 }

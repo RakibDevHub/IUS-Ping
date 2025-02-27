@@ -8,7 +8,7 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>IUS Ping | Login</title>
+        <title>Login | IUS Ping</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <script>
             function updateInputField() {
@@ -39,7 +39,7 @@
                 <p class="text-red-600 text-center mb-4"><%= error%></p>
                 <% }%>
 
-                <form action="login" method="post">
+                <form action="<%= request.getContextPath()%>/login" method="post">
                     <label for="role" class="block mb-2 font-semibold">Login as:</label>
                     <select id="role" name="role" class="w-full p-2 border rounded mb-4" required onchange="updateInputField()">
                         <option value="student">Student</option>

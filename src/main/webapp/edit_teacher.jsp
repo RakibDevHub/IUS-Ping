@@ -4,7 +4,7 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8">
-        <title>Edit Teacher</title>
+        <title>Edit Teacher | IUS Ping</title>
         <script src="https://cdn.tailwindcss.com"></script>
     </head>
     <body class="bg-gray-100">

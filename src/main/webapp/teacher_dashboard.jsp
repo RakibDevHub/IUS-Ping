@@ -11,7 +11,7 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8">
-        <title>IUS Ping | Teacher Dashboard</title>
+        <title>Teacher Dashboard | IUS Ping</title>
         <script src="https://cdn.tailwindcss.com"></script>
     </head>
     <body class="bg-gray-100">
