@@ -22,7 +22,7 @@ public class EditTeacherServlet extends HttpServlet {
 
         String teacherEmail = request.getParameter("id");
 
-        try (Connection conn = DatabaseConfig.getConnection(); PreparedStatement stmt = conn.prepareStatement("SELECT * FROM teachers WHERE teacher_id = ?")) {
+        try (Connection conn = DatabaseConfig.getConnection(); PreparedStatement stmt = conn.prepareStatement("SELECT * FROM teacher WHERE id = ?")) {
 
             stmt.setString(1, teacherEmail);
             ResultSet rs = stmt.executeQuery();
@@ -31,6 +31,7 @@ public class EditTeacherServlet extends HttpServlet {
                 TeacherModel teacher = new TeacherModel(
                         rs.getInt("id"),
                         rs.getString("name"),
+                        rs.getString("department"),
                         rs.getString("email")
                 );
                 request.setAttribute("teacher", teacher);
@@ -51,14 +52,16 @@ public class EditTeacherServlet extends HttpServlet {
         int id = Integer.parseInt(request.getParameter("id"));
         String name = request.getParameter("name");
         String email = request.getParameter("email");
+        String department = request.getParameter("department");
 
         try (Connection conn = DatabaseConfig.getConnection(); PreparedStatement stmt = conn.prepareStatement(
-                "UPDATE teachers SET name = ?, email = ? WHERE id = ?"
+                "UPDATE teacher SET name = ?, department = ?, email = ? WHERE id = ?"
         )) {
 
             stmt.setString(1, name);
-            stmt.setString(2, email);
-            stmt.setInt(3, id);
+            stmt.setString(2, department);
+            stmt.setString(3, email);
+            stmt.setInt(4, id);
 
             stmt.executeUpdate();
             response.sendRedirect(request.getContextPath() + "/admin/dashboard");

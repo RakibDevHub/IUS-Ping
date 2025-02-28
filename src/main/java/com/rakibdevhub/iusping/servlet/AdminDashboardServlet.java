@@ -71,6 +71,7 @@ public class AdminDashboardServlet extends HttpServlet {
                 TeacherModel teacher = new TeacherModel(
                         rs.getInt("id"),
                         rs.getString("name"),
+                        rs.getString("department"),
                         rs.getString("email")
                 );
                 teachers.add(teacher);

@@ -55,7 +55,7 @@ public class SendMessageServlet extends HttpServlet {
             try {
                 conn = DatabaseConfig.getConnection();
                 stmt = conn.prepareStatement(
-                        "SELECT id, student_id, name, department, phone_number FROM students WHERE id = ?");
+                        "SELECT * FROM student WHERE id = ?");
                 stmt.setString(1, studentId);
 
                 rs = stmt.executeQuery();
@@ -160,7 +160,7 @@ public class SendMessageServlet extends HttpServlet {
 
         try {
             conn = DatabaseConfig.getConnection();
-            stmt = conn.prepareStatement("SELECT phone_number FROM students WHERE id = ?");
+            stmt = conn.prepareStatement("SELECT phone_number FROM student WHERE id = ?");
             stmt.setString(1, studentId);
             rs = stmt.executeQuery();
 

@@ -22,6 +22,11 @@
                 </div>
 
                 <div class="mb-4">
+                    <label for="department" class="block text-gray-700 text-sm font-bold mb-2">Name:</label>
+                    <input type="text" name="department" id="department" class="w-full p-2 border rounded" value="${teacher.department}" required>
+                </div>
+
+                <div class="mb-4">
                     <label for="email" class="block text-gray-700 text-sm font-bold mb-2">Email:</label>
                     <input type="email" name="email" id="email" class="w-full p-2 border rounded" value="${teacher.email}" required>
                 </div>

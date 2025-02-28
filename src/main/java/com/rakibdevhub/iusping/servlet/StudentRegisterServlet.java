@@ -51,15 +51,27 @@ public class StudentRegisterServlet extends HttpServlet {
 
         try (Connection conn = DatabaseConfig.getConnection()) {
             if (studentExists(conn, studentId)) {
-                request.setAttribute("error", "StudentExists");
+                String existingStatus = getStudentStatus(conn, studentId);
+                if (existingStatus != null) {
+                    switch (existingStatus.toUpperCase()) {
+                        case "PENDING" ->
+                            request.setAttribute("error", "StudentPending");
+                        case "REJECTED" ->
+                            request.setAttribute("error", "StudentRejected");
+                        default ->
+                            request.setAttribute("error", "StudentExists");
+                    }
+                } else {
+                    request.setAttribute("error", "StudentExists");
+                }
                 request.getRequestDispatcher("/student_register.jsp").forward(request, response);
                 return;
             }
 
             String hashedPassword = hashPassword(password);
 
-            String insertQuery = "BEGIN INSERT INTO student (student_id, name, batch, department, phone_number, password) "
-                    + "VALUES (?, ?, ?, ?, ?, ?) RETURNING id INTO ?; END;";
+            String insertQuery = "BEGIN INSERT INTO student (student_id, name, batch, department, phone_number, password, status) "
+                    + "VALUES (?, ?, ?, ?, ?, ?, 'Pending') RETURNING id INTO ?; END;";
 
             try (CallableStatement stmt = conn.prepareCall(insertQuery)) {
                 stmt.setString(1, studentId);
@@ -77,7 +89,6 @@ public class StudentRegisterServlet extends HttpServlet {
                 session.setAttribute("role", "student");
 
                 response.sendRedirect(request.getContextPath() + "/student/dashboard");
-                return;
             }
         } catch (SQLException e) {
             logger.error("Database error during student registration", e);
@@ -91,6 +102,18 @@ public class StudentRegisterServlet extends HttpServlet {
             stmt.setString(1, studentId);
             try (ResultSet rs = stmt.executeQuery()) {
                 return rs.next();
+            }
+        }
+    }
+
+    private String getStudentStatus(Connection conn, String studentId) throws SQLException {
+        try (PreparedStatement stmt = conn.prepareStatement("SELECT status FROM student WHERE student_id = ?")) {
+            stmt.setString(1, studentId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("status");
+                }
+                return null;
             }
         }
     }
