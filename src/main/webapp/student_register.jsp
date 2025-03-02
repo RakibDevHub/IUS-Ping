@@ -13,6 +13,14 @@
         <div class="max-w-md mx-auto mt-10 bg-white p-6 rounded-lg shadow-md">
             <h2 class="text-2xl font-bold mb-4">Register</h2>
 
+            <% if (request.getAttribute("success") != null) {%>
+            <p class="mb-4 text-green-800 flex justify-center"><%= request.getAttribute("success")%></p>
+            <% }%>
+
+            <% if (request.getAttribute("error") != null) {%>
+            <p class="mb-4 text-red-800 flex justify-center"><%= request.getAttribute("error")%></p>
+            <% }%>
+
             <form action="<%= request.getContextPath()%>/student/register" method="post">
                 <div class="mb-4">
                     <label for="studentId" class="block text-gray-700 text-sm font-bold mb-2">Student ID:</label>

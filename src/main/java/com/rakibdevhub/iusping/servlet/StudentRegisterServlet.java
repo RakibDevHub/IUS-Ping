@@ -6,7 +6,6 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -55,11 +54,11 @@ public class StudentRegisterServlet extends HttpServlet {
                 if (existingStatus != null) {
                     switch (existingStatus.toUpperCase()) {
                         case "PENDING" ->
-                            request.setAttribute("error", "StudentPending");
+                            request.setAttribute("error", "Your registration is pending approval. Please check back later.");
                         case "REJECTED" ->
-                            request.setAttribute("error", "StudentRejected");
+                            request.setAttribute("error", "Your previous registration request was rejected. Please contact the administrator for further assistance.");
                         default ->
-                            request.setAttribute("error", "StudentExists");
+                            request.setAttribute("error", "This student ID is already registered.");
                     }
                 } else {
                     request.setAttribute("error", "StudentExists");
@@ -70,25 +69,20 @@ public class StudentRegisterServlet extends HttpServlet {
 
             String hashedPassword = hashPassword(password);
 
-            String insertQuery = "BEGIN INSERT INTO student (student_id, name, batch, department, phone_number, password, status) "
-                    + "VALUES (?, ?, ?, ?, ?, ?, 'Pending') RETURNING id INTO ?; END;";
+            String insertQuery = "INSERT INTO student (student_id, name, batch, department, phone_number, password, status) "
+                    + "VALUES (?, ?, ?, ?, ?, ?, 'Pending')";
 
-            try (CallableStatement stmt = conn.prepareCall(insertQuery)) {
+            try (PreparedStatement stmt = conn.prepareStatement(insertQuery)) {
                 stmt.setString(1, studentId);
                 stmt.setString(2, name);
                 stmt.setString(3, batch);
                 stmt.setString(4, department);
                 stmt.setString(5, phoneNumber);
                 stmt.setString(6, hashedPassword);
-                stmt.registerOutParameter(7, java.sql.Types.INTEGER);
-                stmt.execute();
-                int studentDbId = stmt.getInt(7);
+                stmt.executeUpdate();
 
-                HttpSession session = request.getSession();
-                session.setAttribute("id", studentDbId);
-                session.setAttribute("role", "student");
-
-                response.sendRedirect(request.getContextPath() + "/student/dashboard");
+                request.setAttribute("success", "Registration successful. Please wait for admin approval.");
+                request.getRequestDispatcher("/student_register.jsp").forward(request, response);
             }
         } catch (SQLException e) {
             logger.error("Database error during student registration", e);

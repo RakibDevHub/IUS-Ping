@@ -48,25 +48,25 @@ public class AddTeacherServlet extends HttpServlet {
         String email = request.getParameter("email");
         String password = request.getParameter("password");
 
-        if (name == null || name.trim().isEmpty() ||
-            department == null || department.trim().isEmpty() ||
-            email == null || email.trim().isEmpty() ||
-            password == null || password.trim().isEmpty()) {
+        if (name == null || name.trim().isEmpty()
+                || department == null || department.trim().isEmpty()
+                || email == null || email.trim().isEmpty()
+                || password == null || password.trim().isEmpty()) {
 
-            request.setAttribute("error", "MissingFields");
+            request.setAttribute("error", "Please fill in all required fields.");
             request.getRequestDispatcher("/add_teacher.jsp").forward(request, response);
             return;
         }
 
         if (!isValidEmail(email)) {
-            request.setAttribute("error", "InvalidEmail");
+            request.setAttribute("error", "Please enter a valid email address.");
             request.getRequestDispatcher("/add_teacher.jsp").forward(request, response);
             return;
         }
 
         try (Connection conn = DatabaseConfig.getConnection()) {
             if (teacherEmailExists(conn, email)) {
-                request.setAttribute("error", "EmailExists");
+                request.setAttribute("error", "A teacher with this email address already exists.");
                 request.getRequestDispatcher("/add_teacher.jsp").forward(request, response);
                 return;
             }
@@ -82,11 +82,12 @@ public class AddTeacherServlet extends HttpServlet {
                 stmt.setString(4, hashedPassword);
 
                 stmt.executeUpdate();
-                response.sendRedirect(request.getContextPath() + "/admin/dashboard");
+                request.setAttribute("success", "Teacher added successfully.");
+                request.getRequestDispatcher("/add_teacher.jsp").forward(request, response);
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            request.setAttribute("error", "DatabaseError");
+            request.setAttribute("error", "A database error occurred. Please try again later.");
             request.getRequestDispatcher("/add_teacher.jsp").forward(request, response);
         }
     }

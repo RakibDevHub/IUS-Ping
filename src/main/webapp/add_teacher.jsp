@@ -13,18 +13,12 @@
         <div class="max-w-md mx-auto mt-10 bg-white p-6 rounded-lg shadow-md">
             <h2 class="text-2xl font-bold mb-4">Add Teacher</h2>
 
-            <% if (request.getAttribute("error") != null) { %>
-            <p style="color: red;">
-                <% if (request.getAttribute("error").equals("MissingFields")) { %>
-                Please fill in all the required fields.
-                <% } else if (request.getAttribute("error").equals("DatabaseError")) { %>
-                A database error occurred.
-                <% } else if (request.getAttribute("error").equals("EmailExists")) { %>
-                A teacher with that email already exists.
-                <% } else if (request.getAttribute("error").equals("InvalidEmail")) { %>
-                Please enter a valid email address.
-                <% } %>
-            </p>
+            <% if (request.getAttribute("success") != null) {%>
+            <p class="mb-4 text-green-800 flex justify-center"><%= request.getAttribute("success")%></p>
+            <% }%>
+
+            <% if (request.getAttribute("error") != null) {%>
+            <p class="mb-4 text-red-800 flex justify-center"><%= request.getAttribute("error")%></p>
             <% }%>
 
             <form action="<%= request.getContextPath()%>/admin/addTeacher" method="post">

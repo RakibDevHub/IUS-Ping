@@ -33,10 +33,8 @@
             <div class="bg-white p-6 rounded-lg shadow-md w-96">
                 <h2 class="text-2xl font-bold text-center mb-4">Login</h2>
 
-                <!-- Display error message if any -->
-                <% String error = request.getParameter("error"); %>
-                <% if (error != null) {%>
-                <p class="text-red-600 text-center mb-4"><%= error%></p>
+                <% if (request.getAttribute("error") != null) {%>
+                <p class="mb-4 text-red-800 flex justify-center"><%= request.getAttribute("error")%></p>
                 <% }%>
 
                 <form action="<%= request.getContextPath()%>/login" method="post">

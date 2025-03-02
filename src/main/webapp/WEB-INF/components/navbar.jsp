@@ -4,7 +4,7 @@
     <div>
         <% if (session.getAttribute("role") == null) { %>
         <a href="<%= request.getContextPath()%>/student/register" class="mr-4">Student Register</a>
-        <a href="login" class="mr-4">Login</a>
+        <a href="<%= request.getContextPath()%>/login" class="mr-4">Login</a>
         <% } else {
             String role = (String) session.getAttribute("role");
             if ("admin".equals(role)) {%>

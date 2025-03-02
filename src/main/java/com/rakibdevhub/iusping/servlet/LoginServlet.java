@@ -39,7 +39,8 @@ public class LoginServlet extends HttpServlet {
         String password = request.getParameter("password");
 
         if (role == null || identifier == null || password == null) {
-            response.sendRedirect("login?error=Invalid input");
+            request.setAttribute("error", "Please provide all login details.");
+            request.getRequestDispatcher("/login.jsp").forward(request, response);
             return;
         }
 
@@ -53,7 +54,8 @@ public class LoginServlet extends HttpServlet {
                 case "student" ->
                     query = "SELECT * FROM student WHERE student_id = ?";
                 default -> {
-                    response.sendRedirect("login?error=Invalid role");
+                    request.setAttribute("error", "Invalid user role selected.");
+                    request.getRequestDispatcher("/login.jsp").forward(request, response);
                     return;
                 }
             }
@@ -70,7 +72,8 @@ public class LoginServlet extends HttpServlet {
                     if ("student".equals(role)) {
                         String status = rs.getString("status");
                         if (!"Approved".equalsIgnoreCase(status)) {
-                            response.sendRedirect("login?error=Student not approved");
+                            request.setAttribute("error", "Your student account is not yet approved.");
+                            request.getRequestDispatcher("/login.jsp").forward(request, response);
                             return;
                         }
                     }
@@ -87,14 +90,17 @@ public class LoginServlet extends HttpServlet {
                             response.sendRedirect("student/dashboard");
                     }
                 } else {
-                    response.sendRedirect("login?error=Invalid credentials");
+                    request.setAttribute("error", "Invalid username or password.");
+                    request.getRequestDispatcher("/login.jsp").forward(request, response);
                 }
             } else {
-                response.sendRedirect("login?error=Invalid credentials");
+                request.setAttribute("error", "Invalid username or password.");
+                request.getRequestDispatcher("/login.jsp").forward(request, response);
             }
         } catch (Exception e) {
             logger.error("Login Error", e);
-            response.sendRedirect("login?error=Database error");
+            request.setAttribute("error", "A database error occurred. Please try again later.");
+            request.getRequestDispatcher("/login.jsp").forward(request, response);
         }
     }
 
