@@ -31,8 +31,8 @@ public class SmsManager {
             }
             props.load(input);
 
-            TRACCAR_ENDPOINT = props.getProperty("traccar.endpoint");
-            AUTH_TOKEN = props.getProperty("traccar.auth.token");
+            TRACCAR_ENDPOINT = props.getProperty("sms.endpoint");
+            AUTH_TOKEN = props.getProperty("sms.token");
 
         } catch (IOException e) {
             throw new RuntimeException("Error loading SMS properties", e);
