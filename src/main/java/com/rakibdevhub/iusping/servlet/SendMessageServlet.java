@@ -5,6 +5,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -36,99 +38,42 @@ public class SendMessageServlet extends HttpServlet {
             return;
         }
 
-        String studentId = request.getParameter("id");
-        if (studentId == null || studentId.trim().isEmpty()) {
-            logger.warn("Invalid student ID (GET).");
-            request.setAttribute("errorMessage", "Invalid student ID.");
-            request.getRequestDispatcher("/send_message.jsp").forward(request, response);
+        String[] studentIds = request.getParameterValues("selectedStudents");
+        if (studentIds == null || studentIds.length == 0) {
+            logger.warn("No students selected (GET).");
+            request.setAttribute("errorMessage", "Please select at least one student.");
+            request.getRequestDispatcher("/teacher/dashboard").forward(request, response);
             return;
         }
 
-        logger.info("Student ID (GET): {}", studentId);
-
-        StudentModel student = (StudentModel) session.getAttribute("student");
-        if (student == null || student.getId() != Integer.parseInt(studentId)) {
-            Connection conn = null;
-            PreparedStatement stmt = null;
-            ResultSet rs = null;
-
-            try {
-                conn = DatabaseConfig.getConnection();
-                stmt = conn.prepareStatement(
-                        "SELECT * FROM student WHERE id = ?");
-                stmt.setString(1, studentId);
-
-                rs = stmt.executeQuery();
-
-                if (rs.next()) {
-                    student = new StudentModel(
-                            rs.getInt("id"),
-                            rs.getString("student_id"),
-                            rs.getString("name"),
-                            rs.getString("batch"),
-                            rs.getString("department"),
-                            rs.getString("phone_number"),
-                            null
-                    );
-                    session.setAttribute("student", student);
-                } else {
-                    logger.warn("Student not found (GET): studentId={}", studentId);
-                    request.setAttribute("errorMessage", "Student not found.");
-                    request.getRequestDispatcher("/send_message.jsp").forward(request, response);
-                    return;
-                }
-
-            } catch (SQLException e) {
-                logger.error("Database error (GET): studentId={}", studentId, e);
-                request.setAttribute("errorMessage", "Database error occurred. Please try again later.");
-                request.getRequestDispatcher("/send_message.jsp").forward(request, response);
-                return;
-            } finally {
-                if (rs != null) {
-                    try {
-                        rs.close();
-                    } catch (SQLException e) {
-                        logger.error("Error closing ResultSet", e);
-                    }
-                }
-                if (stmt != null) {
-                    try {
-                        stmt.close();
-                    } catch (SQLException e) {
-                        logger.error("Error closing PreparedStatement", e);
-                    }
-                }
-                if (conn != null) {
-                    try {
-                        conn.close();
-                    } catch (SQLException e) {
-                        logger.error("Error closing Connection", e);
+        List<StudentModel> students = new ArrayList<>();
+        try (Connection conn = DatabaseConfig.getConnection()) {
+            for (String studentId : studentIds) {
+                try (PreparedStatement stmt = conn.prepareStatement("SELECT * FROM student WHERE id = ?")) {
+                    stmt.setString(1, studentId);
+                    try (ResultSet rs = stmt.executeQuery()) {
+                        if (rs.next()) {
+                            students.add(new StudentModel(
+                                    rs.getInt("id"),
+                                    rs.getString("student_id"),
+                                    rs.getString("name"),
+                                    rs.getString("batch"),
+                                    rs.getString("department"),
+                                    null,
+                                    null
+                            ));
+                        }
                     }
                 }
             }
+        } catch (SQLException e) {
+            logger.error("Database error (GET):", e);
+            request.setAttribute("errorMessage", "Database error occurred. Please try again later.");
+            request.getRequestDispatcher("/teacher/dashboard").forward(request, response);
+            return;
         }
 
-        request.setAttribute("student", student);
-        session.removeAttribute("student");
-
-        String message = (String) session.getAttribute("message");
-        if (message != null) {
-            request.setAttribute("message", message);
-            session.removeAttribute("message");
-        }
-
-        String successMessage = (String) session.getAttribute("successMessage");
-        if (successMessage != null) {
-            request.setAttribute("successMessage", successMessage);
-            session.removeAttribute("successMessage");
-        }
-
-        String errorMessage = (String) session.getAttribute("errorMessage");
-        if (errorMessage != null) {
-            request.setAttribute("errorMessage", errorMessage);
-            session.removeAttribute("errorMessage");
-        }
-
+        request.setAttribute("students", students);
         request.getRequestDispatcher("/send_message.jsp").forward(request, response);
     }
 
@@ -143,82 +88,54 @@ public class SendMessageServlet extends HttpServlet {
             return;
         }
 
-        String studentId = request.getParameter("id");
+        String[] studentIds = request.getParameterValues("selectedStudents");
         String message = request.getParameter("message");
 
-        if (studentId == null || studentId.trim().isEmpty() || message == null || message.trim().isEmpty()) {
-            logger.warn("Invalid input (POST): studentId or message is empty.");
-            session.setAttribute("errorMessage", "Student ID and message cannot be empty.");
-            response.sendRedirect(request.getContextPath() + "/teacher/sendMessage?id=" + studentId);
+        if (studentIds == null || studentIds.length == 0 || message == null || message.trim().isEmpty()) {
+            logger.warn("Invalid input (POST): studentIds or message is empty.");
+            session.setAttribute("errorMessage", "Please select students and enter a message.");
+            response.sendRedirect(request.getContextPath() + "/teacher/dashboard");
             return;
         }
 
-        String studentPhoneNumber = null;
-        Connection conn = null;
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
+        List<String> phoneNumbers = new ArrayList<>();
 
-        try {
-            conn = DatabaseConfig.getConnection();
-            stmt = conn.prepareStatement("SELECT phone_number FROM student WHERE id = ?");
-            stmt.setString(1, studentId);
-            rs = stmt.executeQuery();
+        try (Connection conn = DatabaseConfig.getConnection()) {
+            for (String studentId : studentIds) {
+                String studentPhoneNumber = null;
+                try (PreparedStatement stmt = conn.prepareStatement("SELECT phone_number FROM student WHERE id = ?")) {
+                    stmt.setString(1, studentId);
+                    try (ResultSet rs = stmt.executeQuery()) {
+                        if (rs.next()) {
+                            studentPhoneNumber = rs.getString("phone_number");
+                        }
+                    }
+                }
 
-            if (rs.next()) {
-                studentPhoneNumber = rs.getString("phone_number");
-            } else {
-                logger.warn("Student not found (POST): studentId={}", studentId);
-                session.setAttribute("errorMessage", "Student not found.");
-                response.sendRedirect(request.getContextPath() + "/teacher/sendMessage?id=" + studentId);
-                return;
+                if (studentPhoneNumber != null && !studentPhoneNumber.isEmpty()) {
+                    phoneNumbers.add(studentPhoneNumber);
+                } else {
+                    logger.warn("Invalid phone number for studentId={}", studentId);
+                    // You might want to store the IDs of students with invalid numbers for more specific feedback
+                }
             }
 
-            boolean smsSent = false;
-            if (studentPhoneNumber != null && !studentPhoneNumber.isEmpty()) {
-                smsSent = SmsManager.sendSMS(studentPhoneNumber, message);
+            if (!phoneNumbers.isEmpty()) {
+                boolean allSent = SmsManager.sendBulkSMS(phoneNumbers, message);
+                if (!allSent) {
+                    session.setAttribute("errorMessage", "Failed to send SMS to some students.");
+                } else {
+                    session.setAttribute("successMessage", "Message sent to selected students!");
+                }
             } else {
-                logger.warn("Invalid phone number for studentId={}", studentId);
-                session.setAttribute("errorMessage", "Invalid phone number.");
-                response.sendRedirect(request.getContextPath() + "/teacher/sendMessage?id=" + studentId);
-                return;
-            }
-
-            if (smsSent) {
-                logger.info("Message sent successfully: studentId={}", studentId);
-                session.setAttribute("successMessage", "Message sent successfully!");
-            } else {
-                logger.error("Failed to send SMS (POST): studentId= {}", studentId);
-                session.setAttribute("errorMessage", "Failed to send SMS.");
+                session.setAttribute("errorMessage", "No valid phone numbers found for selected students.");
             }
 
         } catch (SQLException e) {
-            logger.error("Database error (POST): studentId= {}", studentId, e);
+            logger.error("Database error (POST):", e);
             session.setAttribute("errorMessage", "Database error occurred. Please try again later.");
-        } finally {
-            if (rs != null) {
-                try {
-                    rs.close();
-                } catch (SQLException e) {
-                    logger.error("Error closing ResultSet", e);
-                }
-            }
-            if (stmt != null) {
-                try {
-                    stmt.close();
-                } catch (SQLException e) {
-                    logger.error("Error closing PreparedStatement", e);
-                }
-            }
-            if (conn != null) {
-                try {
-                    conn.close();
-                } catch (SQLException e) {
-                    logger.error("Error closing Connection", e);
-                }
-            }
         }
 
-        session.setAttribute("message", message);
-        response.sendRedirect(request.getContextPath() + "/teacher/sendMessage?id=" + studentId);
+        response.sendRedirect(request.getContextPath() + "/teacher/dashboard");
     }
 }

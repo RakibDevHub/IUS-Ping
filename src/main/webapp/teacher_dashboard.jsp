@@ -2,10 +2,20 @@
 <%@ page import="jakarta.servlet.http.HttpSession" %>
 <%@ page import="com.rakibdevhub.iusping.model.StudentModel" %>
 <%@ page import="java.util.List" %>
+<%@ page import="java.util.Set" %>
+<%@ page import="java.util.TreeSet" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%
     String role = (String) request.getAttribute("role");
     List<StudentModel> students = (List<StudentModel>) request.getAttribute("students");
+
+    // Get unique batches for the filter
+    Set<String> uniqueBatches = new TreeSet<>();
+    if (students != null) {
+        for (StudentModel student : students) {
+            uniqueBatches.add(student.getBatch());
+        }
+    }
 %>
 <!DOCTYPE html>
 <html lang="en">
@@ -22,35 +32,77 @@
             <h2 class="text-2xl font-bold mb-6">Teacher Dashboard</h2>
 
             <div class="mb-8">
-                <h3 class="text-lg font-semibold mb-4">Student Lists</h3>
-                <table class="w-full border-collapse border border-gray-300">
-                    <thead>
-                        <tr>
-                            <th class="border border-gray-300 p-2">Sr. No</th>
-                            <th class="border border-gray-300 p-2">Student ID</th>
-                            <th class="border border-gray-300 p-2">Name</th>
-                            <th class="border border-gray-300 p-2">Department</th>
-                            <th class="border border-gray-300 p-2">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <% if (students != null) {
-                                int studentSrNo = 1; // Counter for student rows
-                                for (StudentModel student : students) {%>
-                        <tr>
-                            <td class="border border-gray-300 p-2"><%= studentSrNo++%></td>
-                            <td class="border border-gray-300 p-2"><%= student.getStudentId()%></td>
-                            <td class="border border-gray-300 p-2"><%= student.getName()%></td>
-                            <td class="border border-gray-300 p-2"><%= student.getDepartment()%></td>
-                            <td class="border border-gray-300 p-2">
-                                <a href="sendMessage?id=<%= student.getId()%>" class="bg-blue-500 text-white px-3 py-1 rounded">Send Message</a>
-                            </td>
-                        </tr>
-                        <% }
-                        } %>
-                    </tbody>
-                </table>
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-semibold">Student Lists</h3>
+
+                    <select id="batchFilter" class="border border-gray-300 px-3 py-2 rounded">
+                        <option value="">All Batches</option>
+                        <% for (String batch : uniqueBatches) {%>
+                        <option value="<%= batch%>"><%= batch%></option>
+                        <% } %>
+                    </select>
+                </div>
+
+                <form action="<%= request.getContextPath()%>/teacher/sendMessage" method="get">
+                    <table class="w-full border-collapse border border-gray-300">
+                        <thead>
+                            <tr>
+                                <th class="border border-gray-300 p-2">
+                                    <input type="checkbox" id="selectAllCheckbox">
+                                </th>
+                                <th class="border border-gray-300 p-2">Student ID</th>
+                                <th class="border border-gray-300 p-2">Name</th>
+                                <th class="border border-gray-300 p-2">Department</th>
+                                <th class="border border-gray-300 p-2">Batch</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% if (students != null) {
+                                    int studentSrNo = 1;
+                                    for (StudentModel student : students) {%>
+                            <tr class="student-row" data-batch="<%= student.getBatch()%>">
+                                <td class="border border-gray-300 p-2 text-center">
+                                    <input type="checkbox" name="selectedStudents" value="<%= student.getId()%>">
+                                </td>
+                                <td class="border border-gray-300 p-2"><%= student.getStudentId()%></td>
+                                <td class="border border-gray-300 p-2"><%= student.getName()%></td>
+                                <td class="border border-gray-300 p-2"><%= student.getDepartment()%></td>
+                                <td class="border border-gray-300 p-2"><%= student.getBatch()%></td>
+                            </tr>
+                            <% }
+                                }%>
+                        </tbody>
+                    </table>
+
+                    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded mt-4">Send Message</button>
+                </form>
             </div>
         </div>
+
+        <script>
+            const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+            const studentCheckboxes = document.querySelectorAll('input[name="selectedStudents"]');
+            const batchFilter = document.getElementById('batchFilter');
+            const studentRows = document.querySelectorAll('.student-row');
+
+            selectAllCheckbox.addEventListener('change', () => {
+                studentCheckboxes.forEach(checkbox => {
+                    checkbox.checked = selectAllCheckbox.checked;
+                });
+            });
+
+            batchFilter.addEventListener('change', () => {
+                const selectedBatch = batchFilter.value;
+                studentRows.forEach(row => {
+                    const rowBatch = row.dataset.batch;
+                    if (selectedBatch === "" || rowBatch === selectedBatch) {
+                        row.style.display = 'table-row';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            });
+        </script>
+
     </body>
 </html>

@@ -49,7 +49,7 @@ public class TeacherDashboardServlet extends HttpServlet {
                         rs.getString("name"),
                         rs.getString("batch"),
                         rs.getString("department"),
-                        rs.getString("phone_number"),
+                        null,
                         null
                 );
                 students.add(student);
