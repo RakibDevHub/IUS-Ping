@@ -49,7 +49,7 @@ public class SendMessageServlet extends HttpServlet {
         List<StudentModel> students = new ArrayList<>();
         try (Connection conn = DatabaseConfig.getConnection()) {
             for (String studentId : studentIds) {
-                try (PreparedStatement stmt = conn.prepareStatement("SELECT * FROM student WHERE id = ?")) {
+                try (PreparedStatement stmt = conn.prepareStatement("SELECT * FROM ius_admin.student_list_view WHERE id = ?")) {
                     stmt.setString(1, studentId);
                     try (ResultSet rs = stmt.executeQuery()) {
                         if (rs.next()) {
@@ -103,7 +103,7 @@ public class SendMessageServlet extends HttpServlet {
         try (Connection conn = DatabaseConfig.getConnection()) {
             for (String studentId : studentIds) {
                 String studentPhoneNumber = null;
-                try (PreparedStatement stmt = conn.prepareStatement("SELECT phone_number FROM student WHERE id = ?")) {
+                try (PreparedStatement stmt = conn.prepareStatement("SELECT phone_number FROM ius_admin.student_profile_view WHERE id = ?")) {
                     stmt.setString(1, studentId);
                     try (ResultSet rs = stmt.executeQuery()) {
                         if (rs.next()) {
@@ -116,7 +116,6 @@ public class SendMessageServlet extends HttpServlet {
                     phoneNumbers.add(studentPhoneNumber);
                 } else {
                     logger.warn("Invalid phone number for studentId={}", studentId);
-                    // You might want to store the IDs of students with invalid numbers for more specific feedback
                 }
             }
 

@@ -41,7 +41,7 @@ public class UpdateStudentStatusServlet extends HttpServlet {
             int id = Integer.parseInt(idParam);
 
             try (Connection conn = DatabaseConfig.getConnection();
-                 PreparedStatement stmt = conn.prepareStatement("UPDATE student SET status = ? WHERE id = ?")) {
+                 PreparedStatement stmt = conn.prepareStatement("UPDATE ius_admin.student_list_view SET status = ? WHERE id = ?")) {
 
                 stmt.setString(1, status);
                 stmt.setInt(2, id);

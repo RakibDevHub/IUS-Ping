@@ -22,7 +22,7 @@ public class EditTeacherServlet extends HttpServlet {
 
         String teacherEmail = request.getParameter("id");
 
-        try (Connection conn = DatabaseConfig.getConnection(); PreparedStatement stmt = conn.prepareStatement("SELECT * FROM teacher WHERE id = ?")) {
+        try (Connection conn = DatabaseConfig.getConnection(); PreparedStatement stmt = conn.prepareStatement("SELECT * FROM ius_admin.teacher WHERE id = ?")) {
 
             stmt.setString(1, teacherEmail);
             ResultSet rs = stmt.executeQuery();
@@ -55,7 +55,7 @@ public class EditTeacherServlet extends HttpServlet {
         String department = request.getParameter("department");
 
         try (Connection conn = DatabaseConfig.getConnection(); PreparedStatement stmt = conn.prepareStatement(
-                "UPDATE teacher SET name = ?, department = ?, email = ? WHERE id = ?"
+                "UPDATE ius_admin.teacher SET name = ?, department = ?, email = ? WHERE id = ?"
         )) {
 
             stmt.setString(1, name);

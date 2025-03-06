@@ -40,7 +40,7 @@ public class TeacherDashboardServlet extends HttpServlet {
 
     private List<StudentModel> getStudentsFromDatabase() {
         List<StudentModel> students = new ArrayList<>();
-        try (Connection conn = DatabaseConfig.getConnection(); PreparedStatement stmt = conn.prepareStatement("SELECT * FROM student WHERE UPPER(status) = 'APPROVED'"); ResultSet rs = stmt.executeQuery()) {
+        try (Connection conn = DatabaseConfig.getConnection(); PreparedStatement stmt = conn.prepareStatement("SELECT * FROM ius_admin.student_list_view WHERE UPPER(status) = 'APPROVED'"); ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
                 StudentModel student = new StudentModel(

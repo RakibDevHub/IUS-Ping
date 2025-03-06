@@ -94,7 +94,7 @@ public class StudentRegisterServlet extends HttpServlet {
     }
 
     private void insertStudent(HttpServletRequest request, HttpServletResponse response, Connection conn, String studentId, String name, String batch, String department, String phoneNumber, String hashedPassword) throws ServletException, IOException, SQLException {
-        String insertQuery = "INSERT INTO student (student_id, name, batch, department, phone_number, password, status) VALUES (?, ?, ?, ?, ?, ?, 'Pending')";
+        String insertQuery = "INSERT INTO ius_admin.student (student_id, name, batch, department, phone_number, password, status) VALUES (?, ?, ?, ?, ?, ?, 'Pending')";
         try (PreparedStatement stmt = conn.prepareStatement(insertQuery)) {
             stmt.setString(1, studentId);
             stmt.setString(2, name);
@@ -109,7 +109,7 @@ public class StudentRegisterServlet extends HttpServlet {
     }
 
     private boolean studentExists(Connection conn, String studentId) throws SQLException {
-        try (PreparedStatement stmt = conn.prepareStatement("SELECT id FROM student WHERE student_id = ?")) {
+        try (PreparedStatement stmt = conn.prepareStatement("SELECT id FROM ius_admin.student_list_view WHERE student_id = ?")) {
             stmt.setString(1, studentId);
             try (ResultSet rs = stmt.executeQuery()) {
                 return rs.next();
@@ -118,7 +118,7 @@ public class StudentRegisterServlet extends HttpServlet {
     }
 
     private String getStudentStatus(Connection conn, String studentId) throws SQLException {
-        try (PreparedStatement stmt = conn.prepareStatement("SELECT status FROM student WHERE student_id = ?")) {
+        try (PreparedStatement stmt = conn.prepareStatement("SELECT status FROM ius_admin.student_list_view WHERE student_id = ?")) {
             stmt.setString(1, studentId);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {

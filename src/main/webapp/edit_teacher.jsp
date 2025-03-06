@@ -13,7 +13,7 @@
         <div class="max-w-md mx-auto mt-10 bg-white p-6 rounded-lg shadow-md">
             <h2 class="text-2xl font-bold mb-4">Edit Teacher</h2>
 
-            <form action="/admin/editTeacher" method="post">
+            <form action="<%= request.getContextPath()%>/admin/editTeacher" method="post">
                 <input type="hidden" name="id" value="${teacher.id}">
 
                 <div class="mb-4">

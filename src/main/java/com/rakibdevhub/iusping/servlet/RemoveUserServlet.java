@@ -43,7 +43,7 @@ public class RemoveUserServlet extends HttpServlet {
             int id = Integer.parseInt(userId);
 
             try (Connection conn = DatabaseConfig.getConnection();
-                 PreparedStatement stmt = conn.prepareStatement("DELETE FROM " + tableName + " WHERE id = ?")) {
+                 PreparedStatement stmt = conn.prepareStatement("DELETE FROM ius_admin." + tableName + " WHERE id = ?")) {
 
                 stmt.setInt(1, id);
                 stmt.executeUpdate();

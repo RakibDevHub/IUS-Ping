@@ -161,7 +161,7 @@ public class ConfigServlet extends HttpServlet {
         String hashedPassword = hashPassword(password);
         try {
             Class.forName(dbDriver);
-            try (Connection conn = DriverManager.getConnection(dbUrl, dbUser, dbPassword); PreparedStatement pstmt = conn.prepareStatement("INSERT INTO ADMIN (email, password) VALUES (?, ?)")) {
+            try (Connection conn = DriverManager.getConnection(dbUrl, dbUser, dbPassword); PreparedStatement pstmt = conn.prepareStatement("INSERT INTO ius_admin.admin (email, password) VALUES (?, ?)")) {
                 pstmt.setString(1, email);
                 pstmt.setString(2, hashedPassword);
                 pstmt.executeUpdate();

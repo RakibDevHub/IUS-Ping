@@ -43,7 +43,7 @@ public class AdminDashboardServlet extends HttpServlet {
 
     private List<StudentModel> getStudentsFromDatabase() {
         List<StudentModel> students = new ArrayList<>();
-        try (Connection conn = DatabaseConfig.getConnection(); PreparedStatement stmt = conn.prepareStatement("SELECT * FROM student"); ResultSet rs = stmt.executeQuery()) {
+        try (Connection conn = DatabaseConfig.getConnection(); PreparedStatement stmt = conn.prepareStatement("SELECT * FROM ius_admin.student_list_view"); ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
                 StudentModel student = new StudentModel(
@@ -52,7 +52,7 @@ public class AdminDashboardServlet extends HttpServlet {
                         rs.getString("name"),
                         rs.getString("batch"),
                         rs.getString("department"),
-                        rs.getString("phone_number"),
+                        null,
                         rs.getString("status")
                 );
                 students.add(student);
@@ -65,7 +65,7 @@ public class AdminDashboardServlet extends HttpServlet {
 
     private List<TeacherModel> getTeachersFromDatabase() {
         List<TeacherModel> teachers = new ArrayList<>();
-        try (Connection conn = DatabaseConfig.getConnection(); PreparedStatement stmt = conn.prepareStatement("SELECT * FROM teacher"); ResultSet rs = stmt.executeQuery()) {
+        try (Connection conn = DatabaseConfig.getConnection(); PreparedStatement stmt = conn.prepareStatement("SELECT * FROM ius_admin.teacher"); ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
                 TeacherModel teacher = new TeacherModel(

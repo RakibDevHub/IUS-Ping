@@ -48,11 +48,11 @@ public class LoginServlet extends HttpServlet {
             String query = "";
             switch (role) {
                 case "admin" ->
-                    query = "SELECT * FROM admin WHERE email = ?";
+                    query = "SELECT * FROM ius_admin.admin WHERE email = ?";
                 case "teacher" ->
-                    query = "SELECT * FROM teacher WHERE email = ?";
+                    query = "SELECT * FROM ius_admin.teacher WHERE email = ?";
                 case "student" ->
-                    query = "SELECT * FROM student WHERE student_id = ?";
+                    query = "SELECT * FROM ius_admin.student_profile_view WHERE student_id = ?";
                 default -> {
                     request.setAttribute("error", "Invalid user role selected.");
                     request.getRequestDispatcher("/login.jsp").forward(request, response);

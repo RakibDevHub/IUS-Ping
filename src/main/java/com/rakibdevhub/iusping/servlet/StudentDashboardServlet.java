@@ -51,7 +51,7 @@ public class StudentDashboardServlet extends HttpServlet {
     private void processStudentData(HttpServletRequest request, HttpServletResponse response, String studentId)
             throws ServletException, IOException {
 
-        try (Connection conn = DatabaseConfig.getConnection(); PreparedStatement stmt = conn.prepareStatement("SELECT * FROM student WHERE id = ?")) {
+        try (Connection conn = DatabaseConfig.getConnection(); PreparedStatement stmt = conn.prepareStatement("SELECT * FROM ius_admin.student_profile_view WHERE id = ?")) {
 
             stmt.setString(1, studentId);
 
@@ -133,7 +133,7 @@ public class StudentDashboardServlet extends HttpServlet {
         }
 
         try (Connection conn = DatabaseConfig.getConnection(); PreparedStatement stmt = conn.prepareStatement(
-                "UPDATE student SET student_id = ?, name = ?, department = ?, batch = ?, phone_number = ? WHERE id = ?")) {
+                "UPDATE ius_admin.student_profile_view SET student_id = ?, name = ?, department = ?, batch = ?, phone_number = ? WHERE id = ?")) {
 
             stmt.setString(1, studentId);
             stmt.setString(2, name);
@@ -179,7 +179,7 @@ public class StudentDashboardServlet extends HttpServlet {
             return;
         }
 
-        try (Connection conn = DatabaseConfig.getConnection(); PreparedStatement stmt = conn.prepareStatement("SELECT password FROM student WHERE id = ?")) {
+        try (Connection conn = DatabaseConfig.getConnection(); PreparedStatement stmt = conn.prepareStatement("SELECT password FROM ius_admin.student_profile_view WHERE id = ?")) {
 
             stmt.setInt(1, (Integer) request.getSession().getAttribute("id"));
 
@@ -192,7 +192,7 @@ public class StudentDashboardServlet extends HttpServlet {
                     if (hashedCurrentPassword.equals(storedHashedPassword)) {
                         String hashedNewPassword = hashPassword(newPassword);
 
-                        try (PreparedStatement updateStmt = conn.prepareStatement("UPDATE student SET password = ? WHERE id = ?")) {
+                        try (PreparedStatement updateStmt = conn.prepareStatement("UPDATE ius_admin.student_profile_view SET password = ? WHERE id = ?")) {
                             updateStmt.setString(1, hashedNewPassword);
                             updateStmt.setInt(2, (Integer) request.getSession().getAttribute("id"));
 

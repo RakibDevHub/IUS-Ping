@@ -74,7 +74,7 @@ public class AddTeacherServlet extends HttpServlet {
             String hashedPassword = hashPassword(password);
 
             try (PreparedStatement stmt = conn.prepareStatement(
-                    "INSERT INTO teacher (name, department, email, password) VALUES (?, ?, ?, ?)")) {
+                    "INSERT INTO ius_admin.teacher (name, department, email, password) VALUES (?, ?, ?, ?)")) {
 
                 stmt.setString(1, name);
                 stmt.setString(2, department);
@@ -93,7 +93,7 @@ public class AddTeacherServlet extends HttpServlet {
     }
 
     private boolean teacherEmailExists(Connection conn, String email) throws SQLException {
-        try (PreparedStatement stmt = conn.prepareStatement("SELECT id FROM teacher WHERE email = ?")) {
+        try (PreparedStatement stmt = conn.prepareStatement("SELECT id FROM ius_admin.teacher WHERE email = ?")) {
             stmt.setString(1, email);
             try (ResultSet rs = stmt.executeQuery()) {
                 return rs.next();
