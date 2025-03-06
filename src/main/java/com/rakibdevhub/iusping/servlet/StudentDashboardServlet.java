@@ -196,9 +196,13 @@ public class StudentDashboardServlet extends HttpServlet {
                             updateStmt.setString(1, hashedNewPassword);
                             updateStmt.setInt(2, (Integer) request.getSession().getAttribute("id"));
 
-                            int rowsUpdated = updateStmt.executeUpdate();
-                            request.setAttribute(rowsUpdated > 0 ? "success" : "error",
-                                    rowsUpdated > 0 ? "Password updated successfully!" : "Failed to update password.");
+                            int rowsUpdated = stmt.executeUpdate();
+                            if (rowsUpdated > 0) {
+                                request.setAttribute("success", "Password updated successfully!");
+                                processStudentData(request, response, String.valueOf(request.getSession().getAttribute("id")));
+                            } else {
+                                request.setAttribute("error", "Failed to update password.");
+                            }
                         }
                     } else {
                         request.setAttribute("error", "Incorrect current password.");
@@ -213,6 +217,7 @@ public class StudentDashboardServlet extends HttpServlet {
             request.setAttribute("error", "Database error occurred.");
         }
 
+        processStudentData(request, response, String.valueOf(request.getSession().getAttribute("id")));
         request.getRequestDispatcher("/student_dashboard.jsp").forward(request, response);
     }
 

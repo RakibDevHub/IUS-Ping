@@ -2,6 +2,9 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%
     String role = (String) request.getAttribute("role");
+    if (role == null) {
+        role = "student"; // Default selection
+    }
 %>
 <!DOCTYPE html>
 <html lang="en">
@@ -23,6 +26,11 @@
                     inputField.type = "text";
                 }
             }
+
+            // Ensure correct input type is set on page load
+            window.onload = function () {
+                updateInputField();
+            };
         </script>
     </head>
     <body class="bg-gray-100">
@@ -40,9 +48,9 @@
                 <form action="<%= request.getContextPath()%>/login" method="post">
                     <label for="role" class="block mb-2 font-semibold">Login as:</label>
                     <select id="role" name="role" class="w-full p-2 border rounded mb-4" required onchange="updateInputField()">
-                        <option value="student">Student</option>
-                        <option value="teacher">Teacher</option>
-                        <option value="admin">Admin</option>
+                        <option value="student" <%= "student".equals(role) ? "selected" : ""%>>Student</option>
+                        <option value="teacher" <%= "teacher".equals(role) ? "selected" : ""%>>Teacher</option>
+                        <option value="admin" <%= "admin".equals(role) ? "selected" : ""%>>Admin</option>
                     </select>
 
                     <input type="text" id="identifier" name="identifier" placeholder="Enter Student ID (e.g., 211010239)" 
@@ -58,4 +66,3 @@
 
     </body>
 </html>
-

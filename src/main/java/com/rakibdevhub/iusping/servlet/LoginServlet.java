@@ -80,7 +80,6 @@ public class LoginServlet extends HttpServlet {
                     HttpSession session = request.getSession();
                     session.setAttribute("id", rs.getInt("id"));
                     session.setAttribute("role", role);
-                    session.setAttribute("user", rs.getString("name"));
                     switch (role) {
                         case "admin" ->
                             response.sendRedirect("admin/dashboard");
