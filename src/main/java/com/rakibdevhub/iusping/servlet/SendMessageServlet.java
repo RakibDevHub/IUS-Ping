@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 public class SendMessageServlet extends HttpServlet {
 
     private static final Logger logger = LoggerFactory.getLogger(SendMessageServlet.class);
+    private final String schema = DatabaseConfig.getSchema();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -41,15 +42,15 @@ public class SendMessageServlet extends HttpServlet {
         String[] studentIds = request.getParameterValues("selectedStudents");
         if (studentIds == null || studentIds.length == 0) {
             logger.warn("No students selected (GET).");
-            request.setAttribute("errorMessage", "Please select at least one student.");
+            request.setAttribute("error", "Please select at least one student.");
             request.getRequestDispatcher("/teacher/dashboard").forward(request, response);
             return;
         }
 
         List<StudentModel> students = new ArrayList<>();
-        try (Connection conn = DatabaseConfig.getConnection()) {
+        try (Connection conn = DatabaseConfig.getConnectionUser()) {
             for (String studentId : studentIds) {
-                try (PreparedStatement stmt = conn.prepareStatement("SELECT * FROM ius_admin.student_list_view WHERE id = ?")) {
+                try (PreparedStatement stmt = conn.prepareStatement("SELECT * FROM " + schema + ".student_list_view WHERE id = ?")) {
                     stmt.setString(1, studentId);
                     try (ResultSet rs = stmt.executeQuery()) {
                         if (rs.next()) {
@@ -59,7 +60,6 @@ public class SendMessageServlet extends HttpServlet {
                                     rs.getString("name"),
                                     rs.getString("batch"),
                                     rs.getString("department"),
-                                    null,
                                     null
                             ));
                         }
@@ -68,7 +68,7 @@ public class SendMessageServlet extends HttpServlet {
             }
         } catch (SQLException e) {
             logger.error("Database error (GET):", e);
-            request.setAttribute("errorMessage", "Database error occurred. Please try again later.");
+            request.setAttribute("error", "Database error occurred. Please try again later.");
             request.getRequestDispatcher("/teacher/dashboard").forward(request, response);
             return;
         }
@@ -93,17 +93,17 @@ public class SendMessageServlet extends HttpServlet {
 
         if (studentIds == null || studentIds.length == 0 || message == null || message.trim().isEmpty()) {
             logger.warn("Invalid input (POST): studentIds or message is empty.");
-            session.setAttribute("errorMessage", "Please select students and enter a message.");
+            session.setAttribute("error", "Please select students and enter a message.");
             response.sendRedirect(request.getContextPath() + "/teacher/dashboard");
             return;
         }
 
         List<String> phoneNumbers = new ArrayList<>();
 
-        try (Connection conn = DatabaseConfig.getConnection()) {
+        try (Connection conn = DatabaseConfig.getConnectionMaster()) {
             for (String studentId : studentIds) {
                 String studentPhoneNumber = null;
-                try (PreparedStatement stmt = conn.prepareStatement("SELECT phone_number FROM ius_admin.student_profile_view WHERE id = ?")) {
+                try (PreparedStatement stmt = conn.prepareStatement("SELECT phone_number FROM " + schema + ".student WHERE id = ?")) {
                     stmt.setString(1, studentId);
                     try (ResultSet rs = stmt.executeQuery()) {
                         if (rs.next()) {
@@ -122,17 +122,17 @@ public class SendMessageServlet extends HttpServlet {
             if (!phoneNumbers.isEmpty()) {
                 boolean allSent = SmsManager.sendBulkSMS(phoneNumbers, message);
                 if (!allSent) {
-                    session.setAttribute("errorMessage", "Failed to send SMS to some students.");
+                    session.setAttribute("error", "Failed to send SMS to some students.");
                 } else {
-                    session.setAttribute("successMessage", "Message sent to selected students!");
+                    session.setAttribute("success", "Message sent to selected students!");
                 }
             } else {
-                session.setAttribute("errorMessage", "No valid phone numbers found for selected students.");
+                session.setAttribute("error", "No valid phone numbers found for selected students.");
             }
 
         } catch (SQLException e) {
             logger.error("Database error (POST):", e);
-            session.setAttribute("errorMessage", "Database error occurred. Please try again later.");
+            session.setAttribute("error", "Database error occurred. Please try again later.");
         }
 
         response.sendRedirect(request.getContextPath() + "/teacher/dashboard");

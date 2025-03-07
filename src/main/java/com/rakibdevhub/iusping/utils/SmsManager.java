@@ -58,7 +58,6 @@ public class SmsManager {
 
         try {
             URL url = new URL(TRACCAR_ENDPOINT);
-            logger.info("[{}] Sending SMS to {}", requestLogId, phoneNumber);
 
             conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("POST");

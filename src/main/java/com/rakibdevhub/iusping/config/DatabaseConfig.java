@@ -6,13 +6,21 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DatabaseConfig {
 
-    private static String URL;
-    private static String USERNAME;
-    private static String PASSWORD;
+    private static final Logger logger = LoggerFactory.getLogger(DatabaseConfig.class);
+
     private static String DRIVER;
+    private static String URL;
+
+    private static String USER_USERNAME;
+    private static String USER_PASSWORD;
+
+    private static String ADMIN_USERNAME;
+    private static String ADMIN_PASSWORD;
 
     static {
         try (InputStream input = DatabaseConfig.class.getClassLoader().getResourceAsStream("config.properties")) {
@@ -26,24 +34,42 @@ public class DatabaseConfig {
             properties.load(input);
 
             // Get properties
-            URL = properties.getProperty("database.url");
-            USERNAME = properties.getProperty("database.username");
-            PASSWORD = properties.getProperty("database.password");
             DRIVER = properties.getProperty("database.driver");
+            URL = properties.getProperty("database.url");
+
+            USER_USERNAME = properties.getProperty("database.user.username");
+            USER_PASSWORD = properties.getProperty("database.user.password");
+
+            ADMIN_USERNAME = properties.getProperty("database.admin.username");
+            ADMIN_PASSWORD = properties.getProperty("database.admin.password");
 
             // Load database driver
             Class.forName(DRIVER);
+            logger.info("Database driver loaded successfully.");
 
         } catch (IOException e) {
-            System.err.println("Error loading database properties: " + e.getMessage());
+            logger.error("Error loading database properties: {}", e.getMessage(), e);
             throw new RuntimeException("Failed to load database configuration due to IOException", e);
+        } catch (ClassNotFoundException e) {
+            logger.error("Database driver class not found: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to load database driver", e);
         } catch (Exception e) {
-            System.err.println("An unexpected error occurred: " + e.getMessage());
-            throw new RuntimeException("Failed to load database configuration due to unexpected exception", e);
+            logger.error("Unexpected error during database configuration: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to load database configuration due to an unexpected exception", e);
         }
     }
 
-    public static Connection getConnection() throws SQLException {
-        return DriverManager.getConnection(URL, USERNAME, PASSWORD);
+    public static Connection getConnectionUser() throws SQLException {
+        logger.debug("Creating connection for USER.");
+        return DriverManager.getConnection(URL, USER_USERNAME, USER_PASSWORD);
+    }
+
+    public static Connection getConnectionMaster() throws SQLException {
+        logger.debug("Creating connection for MASTER (Admin).");
+        return DriverManager.getConnection(URL, ADMIN_USERNAME, ADMIN_PASSWORD);
+    }
+
+    public static String getSchema() {
+        return ADMIN_USERNAME;
     }
 }

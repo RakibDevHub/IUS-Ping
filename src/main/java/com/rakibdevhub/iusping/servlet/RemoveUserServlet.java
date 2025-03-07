@@ -13,6 +13,8 @@ import java.sql.SQLException;
 
 @WebServlet({"/admin/removeStudent", "/admin/removeTeacher"})
 public class RemoveUserServlet extends HttpServlet {
+    
+    private final String schema = DatabaseConfig.getSchema();
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -23,15 +25,24 @@ public class RemoveUserServlet extends HttpServlet {
         String tableName = "";
         String errorParam = "";
 
-        if ("/admin/removeStudent".equals(path)) {
-            tableName = "student";
-            errorParam = "Student";
-        } else if ("/admin/removeTeacher".equals(path)) {
-            tableName = "teacher";
-            errorParam = "Teacher";
-        } else {
+        if (null == path) {
             response.sendRedirect(request.getContextPath() + "/admin/dashboard?error=InvalidAction");
             return;
+        } else {
+            switch (path) {
+                case "/admin/removeStudent" -> {
+                    tableName = "student";
+                    errorParam = "Student";
+                }
+                case "/admin/removeTeacher" -> {
+                    tableName = "teacher";
+                    errorParam = "Teacher";
+                }
+                default -> {
+                    response.sendRedirect(request.getContextPath() + "/admin/dashboard?error=InvalidAction");
+                    return;
+                }
+            }
         }
 
         if (userId == null || userId.trim().isEmpty()) {
@@ -42,8 +53,7 @@ public class RemoveUserServlet extends HttpServlet {
         try {
             int id = Integer.parseInt(userId);
 
-            try (Connection conn = DatabaseConfig.getConnection();
-                 PreparedStatement stmt = conn.prepareStatement("DELETE FROM ius_admin." + tableName + " WHERE id = ?")) {
+            try (Connection conn = DatabaseConfig.getConnectionUser(); PreparedStatement stmt = conn.prepareStatement("DELETE FROM " + schema + "." + tableName + " WHERE id = ?")) {
 
                 stmt.setInt(1, id);
                 stmt.executeUpdate();

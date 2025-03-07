@@ -10,20 +10,17 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 
 @WebServlet("/student/dashboard")
 public class StudentDashboardServlet extends HttpServlet {
 
     private static final Logger logger = LoggerFactory.getLogger(StudentDashboardServlet.class);
+    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    private final String schema = DatabaseConfig.getSchema();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -36,25 +33,21 @@ public class StudentDashboardServlet extends HttpServlet {
         }
 
         Object studentIdObj = session.getAttribute("id");
-
-        if (studentIdObj instanceof Integer) {
-            processStudentData(request, response, String.valueOf(studentIdObj));
-        } else if (studentIdObj instanceof String) {
-            processStudentData(request, response, (String) studentIdObj);
-        } else {
-            logger.error("Unexpected type of 'id' in session: {}",
-                    studentIdObj != null ? studentIdObj.getClass() : "null");
-            response.sendRedirect(request.getContextPath() + "/home?error=InvalidSession");
+        if (studentIdObj == null) {
+            logger.error("Session 'id' is null. Redirecting to login.");
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
         }
+
+        String studentId = studentIdObj.toString();
+        processStudentData(request, response, studentId);
     }
 
     private void processStudentData(HttpServletRequest request, HttpServletResponse response, String studentId)
             throws ServletException, IOException {
-
-        try (Connection conn = DatabaseConfig.getConnection(); PreparedStatement stmt = conn.prepareStatement("SELECT * FROM ius_admin.student_profile_view WHERE id = ?")) {
+        try (Connection conn = DatabaseConfig.getConnectionUser(); PreparedStatement stmt = conn.prepareStatement("SELECT * FROM " + schema + ".student_list_view WHERE id = ?")) {
 
             stmt.setString(1, studentId);
-
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     StudentModel student = new StudentModel(
@@ -63,7 +56,6 @@ public class StudentDashboardServlet extends HttpServlet {
                             rs.getString("name"),
                             rs.getString("batch"),
                             rs.getString("department"),
-                            rs.getString("phone_number"),
                             null
                     );
                     request.setAttribute("student", student);
@@ -100,6 +92,8 @@ public class StudentDashboardServlet extends HttpServlet {
         switch (action) {
             case "updateProfile" ->
                 updateProfile(request, response);
+            case "updatePhoneNumber" ->
+                updatePhoneNumber(request, response);
             case "updatePassword" ->
                 updatePassword(request, response);
             default ->
@@ -114,33 +108,23 @@ public class StudentDashboardServlet extends HttpServlet {
         String name = request.getParameter("name");
         String department = request.getParameter("department");
         String batch = request.getParameter("batch");
-        String phoneNumber = request.getParameter("phoneNumber");
 
-        if (studentId == null || studentId.trim().isEmpty()
-                || name == null || name.trim().isEmpty()
-                || department == null || department.trim().isEmpty()
-                || batch == null || batch.trim().isEmpty()
-                || phoneNumber == null || phoneNumber.trim().isEmpty()) {
+        if (studentId == null || name == null || department == null || batch == null
+                || studentId.trim().isEmpty() || name.trim().isEmpty()
+                || department.trim().isEmpty() || batch.trim().isEmpty()) {
             request.setAttribute("error", "All fields are required.");
             request.getRequestDispatcher("/student_dashboard.jsp").forward(request, response);
             return;
         }
 
-        if (!phoneNumber.matches("01\\d{9}")) {
-            request.setAttribute("error", "Invalid phone number format. Must be 11 digits and start with 01.");
-            request.getRequestDispatcher("/student_dashboard.jsp").forward(request, response);
-            return;
-        }
-
-        try (Connection conn = DatabaseConfig.getConnection(); PreparedStatement stmt = conn.prepareStatement(
-                "UPDATE ius_admin.student_profile_view SET student_id = ?, name = ?, department = ?, batch = ?, phone_number = ? WHERE id = ?")) {
+        try (Connection conn = DatabaseConfig.getConnectionUser(); PreparedStatement stmt = conn.prepareStatement(
+                "UPDATE " + schema + ".student_list_view SET student_id = ?, name = ?, department = ?, batch = ? WHERE id = ?")) {
 
             stmt.setString(1, studentId);
             stmt.setString(2, name);
             stmt.setString(3, department);
             stmt.setString(4, batch);
-            stmt.setString(5, phoneNumber);
-            stmt.setInt(6, (Integer) request.getSession().getAttribute("id"));
+            stmt.setInt(5, (Integer) request.getSession().getAttribute("id"));
 
             int rowsUpdated = stmt.executeUpdate();
             if (rowsUpdated > 0) {
@@ -158,6 +142,59 @@ public class StudentDashboardServlet extends HttpServlet {
         request.getRequestDispatcher("/student_dashboard.jsp").forward(request, response);
     }
 
+    private void updatePhoneNumber(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        String phoneNumber = request.getParameter("phoneNumber");
+        String password = request.getParameter("password");
+
+        if (phoneNumber == null || phoneNumber.trim().isEmpty() || password == null || password.trim().isEmpty()) {
+            request.setAttribute("error", "Phone number and password are required.");
+            request.getRequestDispatcher("/student_dashboard.jsp").forward(request, response);
+            return;
+        }
+
+        int studentId = (Integer) request.getSession().getAttribute("id");
+        String storedPasswordHash = null;
+
+        try (Connection conn = DatabaseConfig.getConnectionUser(); PreparedStatement stmt = conn.prepareStatement(
+                "SELECT password FROM " + schema + ".student_list_view WHERE id = ?")) {
+
+            stmt.setInt(1, studentId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    storedPasswordHash = rs.getString("password");
+                }
+            }
+        } catch (SQLException e) {
+            logger.error("Database error retrieving student password.", e);
+            request.setAttribute("error", "Database error occurred.");
+            request.getRequestDispatcher("/student_dashboard.jsp").forward(request, response);
+            return;
+        }
+
+        if (storedPasswordHash == null || !passwordEncoder.matches(password, storedPasswordHash)) {
+            request.setAttribute("error", "Incorrect password.");
+            request.getRequestDispatcher("/student_dashboard.jsp").forward(request, response);
+            return;
+        }
+
+        try (Connection conn = DatabaseConfig.getConnectionMaster(); PreparedStatement updateStmt = conn.prepareStatement(
+                "UPDATE " + schema + ".student SET phone_number = ? WHERE id = ?")) {
+
+            updateStmt.setString(1, phoneNumber);
+            updateStmt.setInt(2, studentId);
+            updateStmt.executeUpdate();
+            request.setAttribute("success", "Phone number updated successfully!");
+
+        } catch (SQLException e) {
+            logger.error("Database error updating phone number.", e);
+            request.setAttribute("error", "Database error occurred.");
+        }
+
+        request.getRequestDispatcher("/student_dashboard.jsp").forward(request, response);
+    }
+
     private void updatePassword(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
@@ -165,9 +202,9 @@ public class StudentDashboardServlet extends HttpServlet {
         String newPassword = request.getParameter("newPassword");
         String confirmPassword = request.getParameter("confirmPassword");
 
-        if (currentPassword == null || currentPassword.trim().isEmpty()
-                || newPassword == null || newPassword.trim().isEmpty()
-                || confirmPassword == null || confirmPassword.trim().isEmpty()) {
+        if (currentPassword == null || newPassword == null || confirmPassword == null
+                || currentPassword.trim().isEmpty() || newPassword.trim().isEmpty()
+                || confirmPassword.trim().isEmpty()) {
             request.setAttribute("error", "All fields are required.");
             request.getRequestDispatcher("/student_dashboard.jsp").forward(request, response);
             return;
@@ -179,36 +216,24 @@ public class StudentDashboardServlet extends HttpServlet {
             return;
         }
 
-        try (Connection conn = DatabaseConfig.getConnection(); PreparedStatement stmt = conn.prepareStatement("SELECT password FROM ius_admin.student_profile_view WHERE id = ?")) {
+        try (Connection conn = DatabaseConfig.getConnectionUser(); PreparedStatement stmt = conn.prepareStatement("SELECT password FROM " + schema + ".student_list_view WHERE id = ?")) {
 
-            stmt.setInt(1, (Integer) request.getSession().getAttribute("id"));
+            int studentId = (Integer) request.getSession().getAttribute("id");
+            stmt.setInt(1, studentId);
 
             try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    String storedHashedPassword = rs.getString("password");
+                if (rs.next() && passwordEncoder.matches(currentPassword, rs.getString("password"))) {
+                    String hashedNewPassword = passwordEncoder.encode(newPassword);
 
-                    String hashedCurrentPassword = hashPassword(currentPassword);
-
-                    if (hashedCurrentPassword.equals(storedHashedPassword)) {
-                        String hashedNewPassword = hashPassword(newPassword);
-
-                        try (PreparedStatement updateStmt = conn.prepareStatement("UPDATE ius_admin.student_profile_view SET password = ? WHERE id = ?")) {
-                            updateStmt.setString(1, hashedNewPassword);
-                            updateStmt.setInt(2, (Integer) request.getSession().getAttribute("id"));
-
-                            int rowsUpdated = stmt.executeUpdate();
-                            if (rowsUpdated > 0) {
-                                request.setAttribute("success", "Password updated successfully!");
-                                processStudentData(request, response, String.valueOf(request.getSession().getAttribute("id")));
-                            } else {
-                                request.setAttribute("error", "Failed to update password.");
-                            }
-                        }
-                    } else {
-                        request.setAttribute("error", "Incorrect current password.");
+                    try (PreparedStatement updateStmt = conn.prepareStatement(
+                            "UPDATE " + schema + ".student_list_view SET password = ? WHERE id = ?")) {
+                        updateStmt.setString(1, hashedNewPassword);
+                        updateStmt.setInt(2, studentId);
+                        updateStmt.executeUpdate();
+                        request.setAttribute("success", "Password updated successfully!");
                     }
                 } else {
-                    request.setAttribute("error", "Student not found.");
+                    request.setAttribute("error", "Incorrect current password.");
                 }
             }
 
@@ -217,25 +242,6 @@ public class StudentDashboardServlet extends HttpServlet {
             request.setAttribute("error", "Database error occurred.");
         }
 
-        processStudentData(request, response, String.valueOf(request.getSession().getAttribute("id")));
         request.getRequestDispatcher("/student_dashboard.jsp").forward(request, response);
-    }
-
-    private String hashPassword(String password) {
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] encodedHash = digest.digest(password.getBytes(StandardCharsets.UTF_8));
-            StringBuilder hexString = new StringBuilder(2 * encodedHash.length);
-            for (byte b : encodedHash) {
-                String hex = Integer.toHexString(0xff & b);
-                if (hex.length() == 1) {
-                    hexString.append('0');
-                }
-                hexString.append(hex);
-            }
-            return hexString.toString();
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("Error hashing password", e);
-        }
     }
 }

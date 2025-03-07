@@ -10,18 +10,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @WebServlet("/student/register")
 public class StudentRegisterServlet extends HttpServlet {
 
     private static final Logger logger = LoggerFactory.getLogger(StudentRegisterServlet.class);
+    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    private final String schema = DatabaseConfig.getSchema();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -42,13 +42,13 @@ public class StudentRegisterServlet extends HttpServlet {
             return;
         }
 
-        try (Connection conn = DatabaseConfig.getConnection()) {
+        try (Connection conn = DatabaseConfig.getConnectionUser()) {
             if (studentExists(conn, studentId)) {
                 handleExistingStudent(request, response, conn, studentId);
                 return;
             }
 
-            String hashedPassword = hashPassword(password);
+            String hashedPassword = passwordEncoder.encode(password);
             insertStudent(request, response, conn, studentId, name, batch, department, phoneNumber, hashedPassword);
 
         } catch (SQLException e) {
@@ -83,9 +83,12 @@ public class StudentRegisterServlet extends HttpServlet {
         String existingStatus = getStudentStatus(conn, studentId);
         if (existingStatus != null) {
             switch (existingStatus.toUpperCase()) {
-                case "PENDING" -> request.setAttribute("error", "Your registration is pending approval. Please check back later.");
-                case "REJECTED" -> request.setAttribute("error", "Your previous registration request was rejected. Please contact the administrator for further assistance.");
-                default -> request.setAttribute("error", "This student ID is already registered.");
+                case "PENDING" ->
+                    request.setAttribute("error", "Your registration is pending approval. Please check back later.");
+                case "REJECTED" ->
+                    request.setAttribute("error", "Your previous registration request was rejected. Please contact the administrator for further assistance.");
+                default ->
+                    request.setAttribute("error", "This student ID is already registered.");
             }
         } else {
             request.setAttribute("error", "StudentExists");
@@ -94,7 +97,7 @@ public class StudentRegisterServlet extends HttpServlet {
     }
 
     private void insertStudent(HttpServletRequest request, HttpServletResponse response, Connection conn, String studentId, String name, String batch, String department, String phoneNumber, String hashedPassword) throws ServletException, IOException, SQLException {
-        String insertQuery = "INSERT INTO ius_admin.student (student_id, name, batch, department, phone_number, password, status) VALUES (?, ?, ?, ?, ?, ?, 'Pending')";
+        String insertQuery = "INSERT INTO " + schema + ".student (student_id, name, batch, department, phone_number, password, status) VALUES (?, ?, ?, ?, ?, ?, 'Pending')";
         try (PreparedStatement stmt = conn.prepareStatement(insertQuery)) {
             stmt.setString(1, studentId);
             stmt.setString(2, name);
@@ -109,7 +112,7 @@ public class StudentRegisterServlet extends HttpServlet {
     }
 
     private boolean studentExists(Connection conn, String studentId) throws SQLException {
-        try (PreparedStatement stmt = conn.prepareStatement("SELECT id FROM ius_admin.student_list_view WHERE student_id = ?")) {
+        try (PreparedStatement stmt = conn.prepareStatement("SELECT id FROM " + schema + ".student_list_view WHERE student_id = ?")) {
             stmt.setString(1, studentId);
             try (ResultSet rs = stmt.executeQuery()) {
                 return rs.next();
@@ -118,7 +121,7 @@ public class StudentRegisterServlet extends HttpServlet {
     }
 
     private String getStudentStatus(Connection conn, String studentId) throws SQLException {
-        try (PreparedStatement stmt = conn.prepareStatement("SELECT status FROM ius_admin.student_list_view WHERE student_id = ?")) {
+        try (PreparedStatement stmt = conn.prepareStatement("SELECT status FROM " + schema + ".student_list_view WHERE student_id = ?")) {
             stmt.setString(1, studentId);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
@@ -126,24 +129,6 @@ public class StudentRegisterServlet extends HttpServlet {
                 }
                 return null;
             }
-        }
-    }
-
-    private String hashPassword(String password) {
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] encodedHash = digest.digest(password.getBytes(StandardCharsets.UTF_8));
-            StringBuilder hexString = new StringBuilder(2 * encodedHash.length);
-            for (byte b : encodedHash) {
-                String hex = Integer.toHexString(0xff & b);
-                if (hex.length() == 1) {
-                    hexString.append('0');
-                }
-                hexString.append(hex);
-            }
-            return hexString.toString();
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("Error hashing password", e);
         }
     }
 }

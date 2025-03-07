@@ -1,9 +1,6 @@
 package com.rakibdevhub.iusping.servlet;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -18,12 +15,16 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @WebServlet("/login")
 public class LoginServlet extends HttpServlet {
 
+    private final String schema  = DatabaseConfig.getSchema();
+    
     private static final long serialVersionUID = 1L;
     private static final Logger logger = LoggerFactory.getLogger(LoginServlet.class);
+    BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -44,15 +45,15 @@ public class LoginServlet extends HttpServlet {
             return;
         }
 
-        try (Connection conn = DatabaseConfig.getConnection()) {
+        try (Connection conn = DatabaseConfig.getConnectionUser()) {
             String query = "";
             switch (role) {
                 case "admin" ->
-                    query = "SELECT * FROM ius_admin.admin WHERE email = ?";
+                    query = "SELECT * FROM " + schema + ".admin WHERE email = ?";
                 case "teacher" ->
-                    query = "SELECT * FROM ius_admin.teacher WHERE email = ?";
+                    query = "SELECT * FROM " + schema + ".teacher WHERE email = ?";
                 case "student" ->
-                    query = "SELECT * FROM ius_admin.student_profile_view WHERE student_id = ?";
+                    query = "SELECT * FROM " + schema + ".student_list_view WHERE student_id = ?";
                 default -> {
                     request.setAttribute("error", "Invalid user role selected.");
                     request.getRequestDispatcher("/login.jsp").forward(request, response);
@@ -64,33 +65,25 @@ public class LoginServlet extends HttpServlet {
             stmt.setString(1, identifier);
             ResultSet rs = stmt.executeQuery();
 
-            if (rs.next()) {
-                String storedHashedPassword = rs.getString("password");
-                String enteredHashedPassword = hashPassword(password);
-
-                if (storedHashedPassword.equals(enteredHashedPassword)) {
-                    if ("student".equals(role)) {
-                        String status = rs.getString("status");
-                        if (!"Approved".equalsIgnoreCase(status)) {
-                            request.setAttribute("error", "Your student account is not yet approved.");
-                            request.getRequestDispatcher("/login.jsp").forward(request, response);
-                            return;
-                        }
+            if (rs.next() && passwordEncoder.matches(password, rs.getString("password"))) {
+                if ("student".equals(role)) {
+                    String status = rs.getString("status");
+                    if (!"Approved".equalsIgnoreCase(status)) {
+                        request.setAttribute("error", "Your student account is not yet approved.");
+                        request.getRequestDispatcher("/login.jsp").forward(request, response);
+                        return;
                     }
-                    HttpSession session = request.getSession();
-                    session.setAttribute("id", rs.getInt("id"));
-                    session.setAttribute("role", role);
-                    switch (role) {
-                        case "admin" ->
-                            response.sendRedirect("admin/dashboard");
-                        case "teacher" ->
-                            response.sendRedirect("teacher/dashboard");
-                        default ->
-                            response.sendRedirect("student/dashboard");
-                    }
-                } else {
-                    request.setAttribute("error", "Invalid username or password.");
-                    request.getRequestDispatcher("/login.jsp").forward(request, response);
+                }
+                HttpSession session = request.getSession();
+                session.setAttribute("id", rs.getInt("id"));
+                session.setAttribute("role", role);
+                switch (role) {
+                    case "admin" ->
+                        response.sendRedirect("admin/dashboard");
+                    case "teacher" ->
+                        response.sendRedirect("teacher/dashboard");
+                    default ->
+                        response.sendRedirect("student/dashboard");
                 }
             } else {
                 request.setAttribute("error", "Invalid username or password.");
@@ -100,24 +93,6 @@ public class LoginServlet extends HttpServlet {
             logger.error("Login Error", e);
             request.setAttribute("error", "A database error occurred. Please try again later.");
             request.getRequestDispatcher("/login.jsp").forward(request, response);
-        }
-    }
-
-    private String hashPassword(String password) {
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] encodedHash = digest.digest(password.getBytes(StandardCharsets.UTF_8));
-            StringBuilder hexString = new StringBuilder(2 * encodedHash.length);
-            for (byte b : encodedHash) {
-                String hex = Integer.toHexString(0xff & b);
-                if (hex.length() == 1) {
-                    hexString.append('0');
-                }
-                hexString.append(hex);
-            }
-            return hexString.toString();
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("Error hashing password", e);
         }
     }
 }

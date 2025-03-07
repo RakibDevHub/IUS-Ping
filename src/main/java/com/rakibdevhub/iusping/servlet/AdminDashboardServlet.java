@@ -21,6 +21,8 @@ import java.util.List;
 @WebServlet("/admin/dashboard")
 public class AdminDashboardServlet extends HttpServlet {
 
+    private final String schema = DatabaseConfig.getSchema();
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -43,7 +45,7 @@ public class AdminDashboardServlet extends HttpServlet {
 
     private List<StudentModel> getStudentsFromDatabase() {
         List<StudentModel> students = new ArrayList<>();
-        try (Connection conn = DatabaseConfig.getConnection(); PreparedStatement stmt = conn.prepareStatement("SELECT * FROM ius_admin.student_list_view"); ResultSet rs = stmt.executeQuery()) {
+        try (Connection conn = DatabaseConfig.getConnectionUser(); PreparedStatement stmt = conn.prepareStatement("SELECT * FROM " + schema + ".student_list_view"); ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
                 StudentModel student = new StudentModel(
@@ -52,7 +54,6 @@ public class AdminDashboardServlet extends HttpServlet {
                         rs.getString("name"),
                         rs.getString("batch"),
                         rs.getString("department"),
-                        null,
                         rs.getString("status")
                 );
                 students.add(student);
@@ -65,7 +66,7 @@ public class AdminDashboardServlet extends HttpServlet {
 
     private List<TeacherModel> getTeachersFromDatabase() {
         List<TeacherModel> teachers = new ArrayList<>();
-        try (Connection conn = DatabaseConfig.getConnection(); PreparedStatement stmt = conn.prepareStatement("SELECT * FROM ius_admin.teacher"); ResultSet rs = stmt.executeQuery()) {
+        try (Connection conn = DatabaseConfig.getConnectionUser(); PreparedStatement stmt = conn.prepareStatement("SELECT * FROM " + schema + ".teacher"); ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
                 TeacherModel teacher = new TeacherModel(

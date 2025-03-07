@@ -15,16 +15,12 @@
         <div class="max-w-2xl mx-auto mt-10 bg-white p-6 rounded-lg shadow-md">
             <h2 class="text-2xl font-bold mb-4">Send Message to Students</h2>
 
-            <%
-                String successMessage = (String) request.getAttribute("successMessage");
-                String errorMessage = (String) request.getAttribute("errorMessage");
-            %>
+            <% if (request.getAttribute("success") != null) {%>
+            <p class="mb-4 text-green-800 flex justify-center"><%= request.getAttribute("success")%></p>
+            <% }%>
 
-            <% if (successMessage != null) {%>
-            <p class="text-green-600 text-center mb-4"><%= successMessage%></p>
-            <% } %>
-            <% if (errorMessage != null) {%>
-            <p class="text-red-600 text-center mb-4"><%= errorMessage%></p>
+            <% if (request.getAttribute("error") != null) {%>
+            <p class="mb-4 text-red-800 flex justify-center"><%= request.getAttribute("error")%></p>
             <% }%>
 
             <form action="<%= request.getContextPath()%>/teacher/sendMessage" method="post">

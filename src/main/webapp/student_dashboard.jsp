@@ -44,11 +44,6 @@
                             <label for="batch" class="block text-gray-700 text-sm font-bold mb-2">Batch:</label>
                             <input type="text" id="batch" name="batch" class="w-full border rounded py-2 px-3 text-gray-700" value="${student.batch}" disabled>
                         </div>
-                        <div class="mb-4">
-                            <label for="phoneNumber" class="block text-gray-700 text-sm font-bold mb-2">Phone Number:</label>
-                            <input type="text" id="phoneNumber" name="phoneNumber" class="w-full border rounded py-2 px-3 text-gray-700" value="${student.phoneNumber}" disabled>
-                        </div>
-
                         <div class="flex justify-end mt-4">
                             <button type="button" id="editProfileBtn" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2">Edit Profile</button>
                             <button type="submit" id="updateProfileBtn" class="hidden bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mr-2">Update Profile</button>

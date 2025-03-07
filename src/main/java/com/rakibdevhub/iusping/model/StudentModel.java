@@ -7,19 +7,17 @@ public class StudentModel {
     private String name;
     private String batch;
     private String department;
-    private String phoneNumber;
     private String status;
 
     public StudentModel() {
     }
 
-    public StudentModel(int id, String studentId, String name, String batch, String department, String phoneNumber, String status) {
+    public StudentModel(int id, String studentId, String name, String batch, String department, String status) {
         this.id = id;
         this.studentId = studentId;
         this.name = name;
         this.batch = batch;
         this.department = department;
-        this.phoneNumber = phoneNumber;
         this.status = status;
     }
 
@@ -61,14 +59,6 @@ public class StudentModel {
 
     public void setDepartment(String department) {
         this.department = department;
-    }
-
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
-
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
     }
 
     public String getStatus() {

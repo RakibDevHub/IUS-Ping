@@ -8,17 +8,18 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.regex.Pattern;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @WebServlet("/admin/addTeacher")
 public class AddTeacherServlet extends HttpServlet {
+
+    BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    private final String schema = DatabaseConfig.getSchema();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -64,17 +65,17 @@ public class AddTeacherServlet extends HttpServlet {
             return;
         }
 
-        try (Connection conn = DatabaseConfig.getConnection()) {
+        try (Connection conn = DatabaseConfig.getConnectionUser()) {
             if (teacherEmailExists(conn, email)) {
                 request.setAttribute("error", "A teacher with this email address already exists.");
                 request.getRequestDispatcher("/add_teacher.jsp").forward(request, response);
                 return;
             }
 
-            String hashedPassword = hashPassword(password);
+            String hashedPassword = passwordEncoder.encode(password);
 
             try (PreparedStatement stmt = conn.prepareStatement(
-                    "INSERT INTO ius_admin.teacher (name, department, email, password) VALUES (?, ?, ?, ?)")) {
+                    "INSERT INTO " + schema + ".teacher (name, department, email, password) VALUES (?, ?, ?, ?)")) {
 
                 stmt.setString(1, name);
                 stmt.setString(2, department);
@@ -93,29 +94,11 @@ public class AddTeacherServlet extends HttpServlet {
     }
 
     private boolean teacherEmailExists(Connection conn, String email) throws SQLException {
-        try (PreparedStatement stmt = conn.prepareStatement("SELECT id FROM ius_admin.teacher WHERE email = ?")) {
+        try (PreparedStatement stmt = conn.prepareStatement("SELECT id FROM " + schema + ".teacher WHERE email = ?")) {
             stmt.setString(1, email);
             try (ResultSet rs = stmt.executeQuery()) {
                 return rs.next();
             }
-        }
-    }
-
-    private String hashPassword(String password) {
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] encodedHash = digest.digest(password.getBytes(StandardCharsets.UTF_8));
-            StringBuilder hexString = new StringBuilder(2 * encodedHash.length);
-            for (byte b : encodedHash) {
-                String hex = Integer.toHexString(0xff & b);
-                if (hex.length() == 1) {
-                    hexString.append('0');
-                }
-                hexString.append(hex);
-            }
-            return hexString.toString();
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("Error hashing password", e);
         }
     }
 

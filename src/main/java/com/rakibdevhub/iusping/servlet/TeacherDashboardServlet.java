@@ -20,6 +20,8 @@ import java.util.List;
 @WebServlet("/teacher/dashboard")
 public class TeacherDashboardServlet extends HttpServlet {
 
+    private final String schema = DatabaseConfig.getSchema();
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -40,7 +42,7 @@ public class TeacherDashboardServlet extends HttpServlet {
 
     private List<StudentModel> getStudentsFromDatabase() {
         List<StudentModel> students = new ArrayList<>();
-        try (Connection conn = DatabaseConfig.getConnection(); PreparedStatement stmt = conn.prepareStatement("SELECT * FROM ius_admin.student_list_view WHERE UPPER(status) = 'APPROVED'"); ResultSet rs = stmt.executeQuery()) {
+        try (Connection conn = DatabaseConfig.getConnectionUser(); PreparedStatement stmt = conn.prepareStatement("SELECT * FROM " + schema + ".student_list_view WHERE UPPER(status) = 'APPROVED'"); ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
                 StudentModel student = new StudentModel(
@@ -49,7 +51,6 @@ public class TeacherDashboardServlet extends HttpServlet {
                         rs.getString("name"),
                         rs.getString("batch"),
                         rs.getString("department"),
-                        null,
                         null
                 );
                 students.add(student);

@@ -14,6 +14,8 @@ import java.sql.SQLException;
 @WebServlet({"/admin/approveStudent", "/admin/rejectStudent"})
 public class UpdateStudentStatusServlet extends HttpServlet {
 
+    private final String schema = DatabaseConfig.getSchema();
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -40,8 +42,7 @@ public class UpdateStudentStatusServlet extends HttpServlet {
         try {
             int id = Integer.parseInt(idParam);
 
-            try (Connection conn = DatabaseConfig.getConnection();
-                 PreparedStatement stmt = conn.prepareStatement("UPDATE ius_admin.student_list_view SET status = ? WHERE id = ?")) {
+            try (Connection conn = DatabaseConfig.getConnectionUser(); PreparedStatement stmt = conn.prepareStatement("UPDATE " + schema + ".student_list_view SET status = ? WHERE id = ?")) {
 
                 stmt.setString(1, status);
                 stmt.setInt(2, id);

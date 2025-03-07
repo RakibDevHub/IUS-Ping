@@ -17,7 +17,9 @@
             <h2 class="text-2xl font-semibold mb-6 text-center">Configuration</h2>
             <form action="config" method="post" class="space-y-4">
                 <div class="flex justify-center mb-4 gap-2">
-                    <button type="submit" name="action" value="testConnection" class="bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-2 px-4 rounded">Test Connection</button>
+                    <button type="submit" name="action" value="testConnection_User" class="bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-2 px-4 rounded">Test User Connection</button>
+                    <button type="submit" name="action" value="testConnection_Admin" class="bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-2 px-4 rounded">Test Admin Connection</button>
+
                     <button type="button" onclick="toggleAdminForm()" class="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded">Add Admin</button>
                 </div>
                 <p class="text-red-500 mt-4">${connectionError}</p>
@@ -25,21 +27,32 @@
                 <p class="text-red-500 mt-4">${adminError}</p>
                 <p class="text-green-500 mt-4">${adminSuccess ? "Admin inserted successfully" : ""}</p>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Database URL</label>
-                    <input type="text" name="dbUrl" value="${dbUrl}" class="w-full p-2 border rounded" required>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Database User</label>
-                    <input type="text" name="dbUser" value="${dbUser}" class="w-full p-2 border rounded" required>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Database Password</label>
-                    <input type="text" name="dbPassword" value="${dbPassword}" class="w-full p-2 border rounded" required>
-                </div>
-                <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Database Driver</label>
                     <input type="text" name="dbDriver" value="${dbDriver}" class="w-full p-2 border rounded" required>
                 </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Database URL</label>
+                    <input type="text" name="dbUrl" value="${dbUrl}" class="w-full p-2 border rounded" required>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Database User Name</label>
+                    <input type="text" name="dbUser_User" value="${dbUser_User}" class="w-full p-2 border rounded" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Database User Password</label>
+                    <input type="text" name="dbPassword_User" value="${dbPassword_User}" class="w-full p-2 border rounded" required>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Database Master Name</label>
+                    <input type="text" name="dbUser_Admin" value="${dbUser_Admin}" class="w-full p-2 border rounded" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Database Master Password</label>
+                    <input type="text" name="dbPassword_Admin" value="${dbPassword_Admin}" class="w-full p-2 border rounded" required>
+                </div>
+
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">SMS Endpoint</label>
                     <input type="text" name="smsEndpoint" value="${smsEndpoint}" class="w-full p-2 border rounded" required>
@@ -64,10 +77,12 @@
                             <h3 class="text-lg leading-6 font-medium text-gray-900">Add Admin</h3>
                             <div class="mt-2 px-7 py-3">
                                 <form action="config" method="post" class="space-y-4">
-                                    <input type="hidden" name="dbUrl" value="${dbUrl}">
-                                    <input type="hidden" name="dbUser" value="${dbUser}">
-                                    <input type="hidden" name="dbPassword" value="${dbPassword}">
                                     <input type="hidden" name="dbDriver" value="${dbDriver}">
+                                    <input type="hidden" name="dbUrl" value="${dbUrl}">
+                                    <input type="hidden" name="dbUser_User" value="${dbUser_User}">
+                                    <input type="hidden" name="dbPassword_User" value="${dbPassword_User}">
+                                    <input type="hidden" name="dbUser_Admin" value="${dbUser_Admin}">
+                                    <input type="hidden" name="dbPassword_Admin" value="${dbPassword_Admin}">
                                     <input type="hidden" name="smsEndpoint" value="${smsEndpoint}">
                                     <input type="hidden" name="smsToken" value="${smsToken}">
                                     <div>

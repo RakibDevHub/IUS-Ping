@@ -16,13 +16,15 @@ import java.sql.SQLException;
 @WebServlet("/admin/editTeacher")
 public class EditTeacherServlet extends HttpServlet {
 
+    private final String schema = DatabaseConfig.getSchema();
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
         String teacherEmail = request.getParameter("id");
 
-        try (Connection conn = DatabaseConfig.getConnection(); PreparedStatement stmt = conn.prepareStatement("SELECT * FROM ius_admin.teacher WHERE id = ?")) {
+        try (Connection conn = DatabaseConfig.getConnectionUser(); PreparedStatement stmt = conn.prepareStatement("SELECT * FROM " + schema + ".teacher WHERE id = ?")) {
 
             stmt.setString(1, teacherEmail);
             ResultSet rs = stmt.executeQuery();
@@ -54,8 +56,8 @@ public class EditTeacherServlet extends HttpServlet {
         String email = request.getParameter("email");
         String department = request.getParameter("department");
 
-        try (Connection conn = DatabaseConfig.getConnection(); PreparedStatement stmt = conn.prepareStatement(
-                "UPDATE ius_admin.teacher SET name = ?, department = ?, email = ? WHERE id = ?"
+        try (Connection conn = DatabaseConfig.getConnectionUser(); PreparedStatement stmt = conn.prepareStatement(
+                "UPDATE " + schema + ".teacher SET name = ?, department = ?, email = ? WHERE id = ?"
         )) {
 
             stmt.setString(1, name);
