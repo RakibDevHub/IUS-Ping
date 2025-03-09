@@ -22,6 +22,8 @@
     <head>
         <meta charset="UTF-8">
         <title>Teacher Dashboard | IUS Ping</title>
+        <link rel="icon" href="<%= request.getContextPath()%>/fav-icon.ico" type="image/x-icon">
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
         <script src="https://cdn.tailwindcss.com"></script>
     </head>
     <body class="bg-gray-100">
@@ -39,7 +41,7 @@
                         <option value="">All Batches</option>
                         <% for (String batch : uniqueBatches) {%>
                         <option value="<%= batch%>"><%= batch%></option>
-                        <% } %>
+                        <% }%>
                     </select>
                 </div>
 
@@ -73,8 +75,10 @@
                                 }%>
                         </tbody>
                     </table>
+                    <div class="w-full flex justify-end mt-4">
+                        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Send Message</button>
 
-                    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded mt-4">Send Message</button>
+                    </div>
                 </form>
             </div>
         </div>
@@ -85,12 +89,28 @@
             const batchFilter = document.getElementById('batchFilter');
             const studentRows = document.querySelectorAll('.student-row');
 
+            // Function to get only visible checkboxes
+            function getVisibleCheckboxes() {
+                return [...studentCheckboxes].filter(checkbox => checkbox.closest('.student-row').style.display !== 'none');
+            }
+
+            // Update select all checkbox state when any checkbox changes
+            studentCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', () => {
+                    const visibleCheckboxes = getVisibleCheckboxes();
+                    selectAllCheckbox.checked = visibleCheckboxes.every(cb => cb.checked);
+                });
+            });
+
+            // Select only visible checkboxes when "Select All" is clicked
             selectAllCheckbox.addEventListener('change', () => {
-                studentCheckboxes.forEach(checkbox => {
+                const visibleCheckboxes = getVisibleCheckboxes();
+                visibleCheckboxes.forEach(checkbox => {
                     checkbox.checked = selectAllCheckbox.checked;
                 });
             });
 
+            // Batch filter logic
             batchFilter.addEventListener('change', () => {
                 const selectedBatch = batchFilter.value;
                 studentRows.forEach(row => {
@@ -101,6 +121,9 @@
                         row.style.display = 'none';
                     }
                 });
+
+                // Reset "Select All" checkbox state after filtering
+                selectAllCheckbox.checked = false;
             });
         </script>
 

@@ -5,6 +5,8 @@
     <head>
         <meta charset="UTF-8">
         <title>Student Dashboard | IUS Ping</title>
+        <link rel="icon" href="<%= request.getContextPath()%>/fav-icon.ico" type="image/x-icon">
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
         <script src="https://cdn.tailwindcss.com"></script>
     </head>
     <body class="bg-gray-100">
@@ -15,7 +17,7 @@
                 <div class="max-w-lg mx-auto bg-white p-6 rounded-lg shadow-md">
                     <div class="flex flex-col mb-4">
                         <h2 class="text-2xl font-bold">Student Information</h2>
-                        <div class="flex gap-2 w-full mt-2">
+                        <div class="flex justify-center gap-2 w-full mt-4">
                             <button type="button" id="changePasswordBtn" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">Change Password</button>
                             <button type="button" id="changeNumberBtn" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">Change Number</button>
                         </div>
@@ -114,7 +116,7 @@
             const changeNumberBtn = document.getElementById('changeNumberBtn');
             const numberModal = document.getElementById('numberModal');
             const closeNumberModalBtn = document.getElementById('closeNumberModalBtn');
-            
+
             editProfileBtn.addEventListener('click', () => {
                 const inputs = profileForm.querySelectorAll('input:not([type="hidden"])');
 

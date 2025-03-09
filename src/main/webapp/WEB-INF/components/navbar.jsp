@@ -1,8 +1,11 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <nav class="bg-blue-500 p-4 text-white flex justify-between px-24">
-    <a href="<%= request.getContextPath()%>/home" class="text-lg font-bold">IUS Ping</a>
+    <a href="<%= request.getContextPath()%>/home" class="text-lg font-bold flex items-center">
+        <img src="<%= request.getContextPath()%>/icon.png" alt="alt" class="mr-2 h-[20px]"/>
+        IUS Ping
+    </a>
     <div>
-        <% if (session.getAttribute("role") == null) { %>
+        <% if (session.getAttribute("role") == null) {%>
         <a href="<%= request.getContextPath()%>/student/register" class="mr-4">Student Register</a>
         <a href="<%= request.getContextPath()%>/login" class="mr-4">Login</a>
         <% } else {
