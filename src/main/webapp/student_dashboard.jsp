@@ -13,9 +13,12 @@
         <div class="container mx-auto mt-10">
             <div id="blurrable-content">
                 <div class="max-w-lg mx-auto bg-white p-6 rounded-lg shadow-md">
-                    <div class="flex justify-between mb-4">
+                    <div class="flex flex-col mb-4">
                         <h2 class="text-2xl font-bold">Student Information</h2>
-                        <button type="button" id="changePasswordBtn" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">Change Password</button>
+                        <div class="flex gap-2 w-full mt-2">
+                            <button type="button" id="changePasswordBtn" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">Change Password</button>
+                            <button type="button" id="changeNumberBtn" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">Change Number</button>
+                        </div>
                     </div>
 
                     <% if (request.getAttribute("success") != null) {%>
@@ -79,6 +82,27 @@
             </div>
         </div>
 
+        <div id="numberModal" class="hidden fixed inset-0 z-50 overflow-y-auto">
+            <div class="flex items-center justify-center min-h-screen px-4">
+                <div class="bg-white rounded-lg p-6 shadow-xl w-96">
+                    <h2 class="text-xl font-bold mb-4">Change Phone Number</h2>
+                    <form action="<%= request.getContextPath()%>/student/dashboard" method="post">
+                        <input type="hidden" name="action" value="updateNumber">
+                        <div class="mb-4">
+                            <label for="newNumber" class="block text-gray-700 text-sm font-bold mb-2">New Phone Number:</label>
+                            <input type="text" id="newNumber" name="newNumber" class="w-full border rounded py-2 px-3 text-gray-700" required>
+                        </div>
+                        <div class="mb-4">
+                            <label for="password" class="block text-gray-700 text-sm font-bold mb-2">New Phone Number:</label>
+                            <input type="password" id="password" name="password" class="w-full border rounded py-2 px-3 text-gray-700" required>
+                        </div>
+                        <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Confirm</button>
+                        <button type="button" id="closeNumberModalBtn" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded ml-2">Cancel</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
         <script>
             const changePasswordBtn = document.getElementById('changePasswordBtn');
             const editProfileBtn = document.getElementById('editProfileBtn');
@@ -87,7 +111,10 @@
             const closeModalBtn = document.getElementById('closeModalBtn');
             const profileForm = document.getElementById('profileForm');
             const cancelProfileBtn = document.getElementById('cancelProfileBtn');
-
+            const changeNumberBtn = document.getElementById('changeNumberBtn');
+            const numberModal = document.getElementById('numberModal');
+            const closeNumberModalBtn = document.getElementById('closeNumberModalBtn');
+            
             editProfileBtn.addEventListener('click', () => {
                 const inputs = profileForm.querySelectorAll('input:not([type="hidden"])');
 
@@ -100,7 +127,7 @@
                 cancelProfileBtn.classList.remove('hidden');
             });
 
-// Cancel button click handler
+            // Cancel button click handler
             cancelProfileBtn.addEventListener('click', () => {
                 const inputs = profileForm.querySelectorAll('input:not([type="hidden"])');
 
@@ -113,7 +140,6 @@
                 cancelProfileBtn.classList.add('hidden');
             });
 
-
             changePasswordBtn.addEventListener('click', () => {
                 passwordModal.classList.remove('hidden');
                 document.getElementById('blurrable-content').classList.add('blur');
@@ -123,6 +149,17 @@
                 passwordModal.classList.add('hidden');
                 document.getElementById('blurrable-content').classList.remove('blur');
             });
+
+            changeNumberBtn.addEventListener('click', () => {
+                numberModal.classList.remove('hidden');
+                document.getElementById('blurrable-content').classList.add('blur');
+            });
+
+            closeNumberModalBtn.addEventListener('click', () => {
+                numberModal.classList.add('hidden');
+                document.getElementById('blurrable-content').classList.remove('blur');
+            });
+
         </script>
 
         <style>

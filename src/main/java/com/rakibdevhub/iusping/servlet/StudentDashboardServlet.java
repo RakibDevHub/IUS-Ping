@@ -92,7 +92,7 @@ public class StudentDashboardServlet extends HttpServlet {
         switch (action) {
             case "updateProfile" ->
                 updateProfile(request, response);
-            case "updatePhoneNumber" ->
+            case "updateNumber" ->
                 updatePhoneNumber(request, response);
             case "updatePassword" ->
                 updatePassword(request, response);
@@ -145,7 +145,7 @@ public class StudentDashboardServlet extends HttpServlet {
     private void updatePhoneNumber(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        String phoneNumber = request.getParameter("phoneNumber");
+        String phoneNumber = request.getParameter("newNumber");
         String password = request.getParameter("password");
 
         if (phoneNumber == null || phoneNumber.trim().isEmpty() || password == null || password.trim().isEmpty()) {
@@ -174,7 +174,7 @@ public class StudentDashboardServlet extends HttpServlet {
         }
 
         if (storedPasswordHash == null || !passwordEncoder.matches(password, storedPasswordHash)) {
-            request.setAttribute("error", "Incorrect password.");
+            request.setAttribute("error", "Incorrect password. Number update failed");
             request.getRequestDispatcher("/student_dashboard.jsp").forward(request, response);
             return;
         }
@@ -233,7 +233,7 @@ public class StudentDashboardServlet extends HttpServlet {
                         request.setAttribute("success", "Password updated successfully!");
                     }
                 } else {
-                    request.setAttribute("error", "Incorrect current password.");
+                    request.setAttribute("error", "Incorrect current password. Password update failed");
                 }
             }
 
