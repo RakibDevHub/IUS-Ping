@@ -1,5 +1,9 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%
+    String successMessage = (String) request.getAttribute("success");
+    String errorMessage = (String) request.getAttribute("error");
+%>
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -14,15 +18,7 @@
 
         <div class="max-w-md mx-auto mt-10 bg-white p-6 rounded-lg shadow-md">
             <h2 class="text-2xl font-bold mb-4">Add Teacher</h2>
-
-            <% if (request.getAttribute("success") != null) {%>
-            <p class="mb-4 text-green-800 flex justify-center"><%= request.getAttribute("success")%></p>
-            <% }%>
-
-            <% if (request.getAttribute("error") != null) {%>
-            <p class="mb-4 text-red-800 flex justify-center"><%= request.getAttribute("error")%></p>
-            <% }%>
-
+            
             <form action="<%= request.getContextPath()%>/admin/addTeacher" method="post">
                 <div class="mb-4">
                     <label for="name" class="block text-gray-700 text-sm font-bold mb-2">Name:</label>
@@ -47,5 +43,48 @@
                 <button type="submit" class="w-full bg-blue-500 text-white p-2 rounded">Add Teacher</button>
             </form>
         </div>
-    </body>
+        <div id="messageModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden">
+            <div class="modal-content bg-white rounded-xl shadow-2xl text-center p-6 w-full max-w-md border border-gray-200">
+                <div id="modalIcon" class="modal-icon flex justify-center items-center text-4xl mb-6">
+                </div>
+                <h2 id="modalTitle" class="modal-title text-2xl font-semibold text-gray-900 mb-4"></h2>
+                <p id="modalText" class="modal-text text-gray-700 mb-6 text-lg"></p>
+                <div class="modal-buttons flex justify-center space-x-4">
+                    <button id="closeModal" class="close-button bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-8 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
+                        OK
+                    </button>
+                </div>
+            </div>
+        </div>
+        <script>
+            const messageModal = document.getElementById('messageModal');
+            const closeModalBtn = document.getElementById('closeModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalText = document.getElementById('modalText');
+            const modalIcon = document.getElementById('modalIcon');
+
+            function showMessageModal(type, text) {
+                modalTitle.innerText = type === 'success' ? 'Success' : 'Error';
+                modalText.innerText = text;
+                messageModal.classList.remove('hidden');
+
+                if (type === 'success') {
+                    modalIcon.innerHTML = '<i class="fas fa-check-circle text-green-500"></i>';
+                } else {
+                    modalIcon.innerHTML = '<i class="fas fa-exclamation-triangle text-red-500"></i>';
+                }
+
+
+                closeModalBtn.onclick = () => {
+                    messageModal.classList.add('hidden');
+                };
+            }
+
+            <% if (successMessage != null) {%>
+            showMessageModal('success', '<%= successMessage%>');
+            <% } else if (errorMessage != null) {%>
+            showMessageModal('error', '<%= errorMessage%>');
+            <% }%>
+        </script>
+    </body>    
 </html>

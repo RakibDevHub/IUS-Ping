@@ -33,14 +33,6 @@
 
         <c:import url="/WEB-INF/components/navbar.jsp"/>
 
-        <!-- Popup Modal for Messages -->
-        <div id="messageModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden">
-            <div class="bg-white p-6 rounded-lg shadow-lg text-center w-96">
-                <p id="modalMessage" class="text-lg"></p>
-                <button id="closeModal" class="mt-4 bg-blue-500 text-white px-4 py-2 rounded">OK</button>
-            </div>
-        </div>
-
         <div class="max-w-5xl mx-auto mt-10 bg-white p-6 rounded-lg shadow-md text-center px-24">
             <h2 class="text-2xl font-bold mb-6">Teacher Dashboard</h2>
 
@@ -92,6 +84,20 @@
             </div>
         </div>
 
+        <div id="messageModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden">
+            <div class="modal-content bg-white rounded-xl shadow-2xl text-center p-6 w-full max-w-md border border-gray-200">
+                <div id="modalIcon" class="modal-icon flex justify-center items-center text-4xl mb-6">
+                </div>
+                <h2 id="modalTitle" class="modal-title text-2xl font-semibold text-gray-900 mb-4"></h2>
+                <p id="modalText" class="modal-text text-gray-700 mb-6 text-lg"></p>
+                <div class="modal-buttons flex justify-center space-x-4">
+                    <button id="closeModal" class="close-button bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-8 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
+                        OK
+                    </button>
+                </div>
+            </div>
+        </div> 
+
         <script>
             const selectAllCheckbox = document.getElementById('selectAllCheckbox');
             const studentCheckboxes = document.querySelectorAll('input[name="selectedStudents"]');
@@ -135,34 +141,34 @@
                 selectAllCheckbox.checked = false;
             });
 
-            // Handle message popup
-            window.onload = function () {
-                const messageModal = document.getElementById('messageModal');
-                const modalMessage = document.getElementById('modalMessage');
-                const closeModal = document.getElementById('closeModal');
+            const messageModal = document.getElementById('messageModal');
+            const closeModalBtn = document.getElementById('closeModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalText = document.getElementById('modalText');
+            const modalIcon = document.getElementById('modalIcon');
+
+            function showMessageModal(type, text) {
+                modalTitle.innerText = type === 'success' ? 'Success' : 'Error';
+                modalText.innerText = text;
+                messageModal.classList.remove('hidden');
+
+                if (type === 'success') {
+                    modalIcon.innerHTML = '<i class="fas fa-check-circle text-green-500"></i>';
+                } else {
+                    modalIcon.innerHTML = '<i class="fas fa-exclamation-triangle text-red-500"></i>';
+                }
+
+
+                closeModalBtn.onclick = () => {
+                    messageModal.classList.add('hidden');
+                };
+            }
 
             <% if (successMessage != null) {%>
-                modalMessage.innerText = "<%= successMessage%>";
-                modalMessage.classList.add("text-green-700");
-                messageModal.classList.remove("hidden");
-            <% session.removeAttribute("success"); %>
+            showMessageModal('success', '<%= successMessage%>');
             <% } else if (errorMessage != null) {%>
-                modalMessage.innerText = "<%= errorMessage%>";
-                modalMessage.classList.add("text-red-700");
-                messageModal.classList.remove("hidden");
-            <% session.removeAttribute("error"); %>
+            showMessageModal('error', '<%= errorMessage%>');
             <% }%>
-
-                // Close modal on button click
-                closeModal.addEventListener("click", function () {
-                    messageModal.classList.add("hidden");
-                });
-
-                // Auto-close modal after 5 seconds
-                setTimeout(() => {
-                    messageModal.classList.add("hidden");
-                }, 5000);
-            };
         </script>
 
     </body>
