@@ -122,7 +122,7 @@ public class SendMessageServlet extends HttpServlet {
             if (!phoneNumbers.isEmpty()) {
                 boolean allSent = SmsManager.sendBulkSMS(phoneNumbers, message);
                 if (!allSent) {
-                    session.setAttribute("error", "Failed to send SMS to some students.");
+                    session.setAttribute("error", "Failed to send SMS.");
                 } else {
                     session.setAttribute("success", "Message sent to selected students!");
                 }

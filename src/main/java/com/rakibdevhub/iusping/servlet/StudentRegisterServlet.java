@@ -8,13 +8,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import java.sql.*;
+import java.util.regex.Pattern;
 
 @WebServlet("/student/register")
 public class StudentRegisterServlet extends HttpServlet {
@@ -22,6 +20,14 @@ public class StudentRegisterServlet extends HttpServlet {
     private static final Logger logger = LoggerFactory.getLogger(StudentRegisterServlet.class);
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
     private final String schema = DatabaseConfig.getSchema();
+
+    // Validation patterns
+    private static final Pattern STUDENT_ID_PATTERN = Pattern.compile("^\\d+$");
+    private static final Pattern NAME_PATTERN = Pattern.compile("^[a-zA-Z ]+$");
+    private static final Pattern BATCH_PATTERN = Pattern.compile("^\\d+$");
+    private static final Pattern DEPARTMENT_PATTERN = Pattern.compile("^[a-zA-Z ]+$");
+    private static final Pattern PHONE_PATTERN = Pattern.compile("^01\\d{9}$");
+    private static final Pattern PASSWORD_PATTERN = Pattern.compile("^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$");
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -72,10 +78,37 @@ public class StudentRegisterServlet extends HttpServlet {
             request.setAttribute("error", "All fields are required.");
             return false;
         }
-        if (!phoneNumber.matches("01\\d{9}")) {
+
+        if (!STUDENT_ID_PATTERN.matcher(studentId).matches()) {
+            request.setAttribute("error", "Student ID must contain only numbers.");
+            return false;
+        }
+
+        if (!NAME_PATTERN.matcher(name).matches()) {
+            request.setAttribute("error", "Name must contain only alphabets and spaces.");
+            return false;
+        }
+
+        if (!BATCH_PATTERN.matcher(batch).matches()) {
+            request.setAttribute("error", "Batch must contain only numbers.");
+            return false;
+        }
+
+        if (!DEPARTMENT_PATTERN.matcher(department).matches()) {
+            request.setAttribute("error", "Department must contain only alphabets and spaces.");
+            return false;
+        }
+
+        if (!PHONE_PATTERN.matcher(phoneNumber).matches()) {
             request.setAttribute("error", "Invalid phone number format. Must be 11 digits and start with 01.");
             return false;
         }
+
+        if (!PASSWORD_PATTERN.matcher(password).matches()) {
+            request.setAttribute("error", "Password must be at least 8 characters long and contain at least one letter and one number.");
+            return false;
+        }
+
         return true;
     }
 
@@ -102,7 +135,7 @@ public class StudentRegisterServlet extends HttpServlet {
             stmt.setString(1, studentId);
             stmt.setString(2, name);
             stmt.setString(3, batch);
-            stmt.setString(4, department);
+            stmt.setString(4, department.toUpperCase()); // Ensure uppercase department
             stmt.setString(5, phoneNumber);
             stmt.setString(6, hashedPassword);
             stmt.executeUpdate();
@@ -124,10 +157,7 @@ public class StudentRegisterServlet extends HttpServlet {
         try (PreparedStatement stmt = conn.prepareStatement("SELECT status FROM " + schema + ".student_list_view WHERE student_id = ?")) {
             stmt.setString(1, studentId);
             try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getString("status");
-                }
-                return null;
+                return rs.next() ? rs.getString("status") : null;
             }
         }
     }

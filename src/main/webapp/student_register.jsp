@@ -1,5 +1,9 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%
+    String successMessage = (String) request.getAttribute("success");
+    String errorMessage = (String) request.getAttribute("error");
+%>
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -14,14 +18,6 @@
 
         <div class="max-w-md mx-auto mt-10 bg-white p-6 rounded-lg shadow-md">
             <h2 class="text-2xl font-bold mb-4">Register</h2>
-
-            <% if (request.getAttribute("success") != null) {%>
-            <p class="mb-4 text-green-800 flex justify-center"><%= request.getAttribute("success")%></p>
-            <% }%>
-
-            <% if (request.getAttribute("error") != null) {%>
-            <p class="mb-4 text-red-800 flex justify-center"><%= request.getAttribute("error")%></p>
-            <% }%>
 
             <form action="<%= request.getContextPath()%>/student/register" method="post">
                 <div class="mb-4">
@@ -57,5 +53,32 @@
                 <button type="submit" class="w-full bg-blue-500 text-white p-2 rounded">Register</button>
             </form>
         </div>
+
+        <div id="messageModal" class="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 hidden">
+            <div class="bg-white p-6 rounded-lg shadow-lg text-center">
+                <p id="modalMessage" class="text-lg"></p>
+                <button id="closeModal" class="mt-4 px-4 py-2 bg-gray-500 text-white rounded">Close</button>
+            </div>
+        </div>
+
+        <script>
+            const messageModal = document.getElementById('messageModal');
+            const modalMessage = document.getElementById('modalMessage');
+            const closeModal = document.getElementById('closeModal');
+
+            <% if (successMessage != null) {%>
+            modalMessage.innerText = "<%= successMessage%>";
+            modalMessage.classList.add("text-green-700");
+            messageModal.classList.remove("hidden");
+            <% } else if (errorMessage != null) {%>
+            modalMessage.innerText = "<%= errorMessage%>";
+            modalMessage.classList.add("text-red-700");
+            messageModal.classList.remove("hidden");
+            <% }%>
+
+            closeModal.addEventListener('click', () => {
+                messageModal.classList.add("hidden");
+            });
+        </script>
     </body>
 </html>
