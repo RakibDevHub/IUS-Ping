@@ -2,7 +2,20 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%
     String successMessage = (String) request.getAttribute("success");
+    if (successMessage == null) {
+        successMessage = (String) session.getAttribute("success");
+        if (successMessage != null) {
+            session.removeAttribute("success");
+        }
+    }
+
     String errorMessage = (String) request.getAttribute("error");
+    if (errorMessage == null) {
+        errorMessage = (String) session.getAttribute("error");
+        if (errorMessage != null) {
+            session.removeAttribute("error");
+        }
+    }
 %>
 <!DOCTYPE html>
 <html lang="en">
@@ -17,7 +30,7 @@
         <c:import url="/WEB-INF/components/navbar.jsp"/>
 
         <div class="max-w-md mx-auto mt-10 bg-white p-6 rounded-lg shadow-md">
-            <h2 class="text-2xl font-bold mb-4">Edit Teacher</h2>
+            <h2 class="text-2xl font-bold mb-4">Edit Teacher Information</h2>
 
             <form action="<%= request.getContextPath()%>/admin/editTeacher" method="post">
                 <input type="hidden" name="id" value="${teacher.id}">
@@ -26,18 +39,18 @@
                     <label for="name" class="block text-gray-700 text-sm font-bold mb-2">Name:</label>
                     <input type="text" name="name" id="name" class="w-full p-2 border rounded" value="${teacher.name}" required>
                 </div>
-
-                <div class="mb-4">
-                    <label for="department" class="block text-gray-700 text-sm font-bold mb-2">Name:</label>
-                    <input type="text" name="department" id="department" class="w-full p-2 border rounded" value="${teacher.department}" required>
-                </div>
-
                 <div class="mb-4">
                     <label for="email" class="block text-gray-700 text-sm font-bold mb-2">Email:</label>
                     <input type="email" name="email" id="email" class="w-full p-2 border rounded" value="${teacher.email}" required>
                 </div>
-
-                <button type="submit" class="w-full bg-blue-500 text-white p-2 rounded">Update Teacher</button>
+                <div class="mb-4">
+                    <label for="department" class="block text-gray-700 text-sm font-bold mb-2">Department:</label>
+                    <input type="text" name="department" id="department" class="w-full p-2 border rounded" value="${teacher.department}" required>
+                </div>
+                <div class="w-full flex flex-row gap-4 justify-center">
+                <button type="submit" class="bg-green-500 text-white py-2 px-4 rounded">Update</button>
+                <a href="<%= request.getContextPath()%>/admin/dashboard" class="bg-gray-500 text-white py-2 px-4 rounded">Cancel</a>
+                </div>
             </form>
         </div>
         <div id="messageModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden">

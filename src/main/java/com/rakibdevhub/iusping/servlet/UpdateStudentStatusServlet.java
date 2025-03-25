@@ -17,49 +17,35 @@ public class UpdateStudentStatusServlet extends HttpServlet {
     private final String schema = DatabaseConfig.getSchema();
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String action = request.getServletPath();
+        String studentId = request.getParameter("id");
 
-        String path = request.getServletPath();
-        String status = "";
-
-        if ("/admin/approveStudent".equals(path)) {
-            status = "Approved";
-        } else if ("/admin/rejectStudent".equals(path)) {
-            status = "Rejected";
-        } else {
-            response.sendRedirect(request.getContextPath() + "/admin/dashboard?error=InvalidAction");
+        if (studentId == null || studentId.isEmpty()) {
+            request.setAttribute("error", "Invalid student ID.");
+            response.sendRedirect(request.getContextPath() + "/admin/dashboard");
             return;
         }
 
-        String idParam = request.getParameter("id");
+        String newStatus = action.equals("/admin/approveStudent") ? "Approved" : "Rejected";
 
-        if (idParam == null || idParam.isEmpty()) {
-            response.sendRedirect(request.getContextPath() + "/admin/dashboard?error=MissingStudentID");
-            return;
-        }
+        try (Connection conn = DatabaseConfig.getConnectionUser(); PreparedStatement stmt = conn.prepareStatement("UPDATE " + schema + ".student_list_view SET status = ? WHERE id = ?")) {
 
-        try {
-            int id = Integer.parseInt(idParam);
+            stmt.setString(1, newStatus);
+            stmt.setString(2, studentId);
+            int rowsUpdated = stmt.executeUpdate();
 
-            try (Connection conn = DatabaseConfig.getConnectionUser(); PreparedStatement stmt = conn.prepareStatement("UPDATE " + schema + ".student_list_view SET status = ? WHERE id = ?")) {
-
-                stmt.setString(1, status);
-                stmt.setInt(2, id);
-
-                int rowsUpdated = stmt.executeUpdate();
-
-                if (rowsUpdated > 0) {
-                    response.sendRedirect(request.getContextPath() + "/admin/dashboard");
-                } else {
-                    response.sendRedirect(request.getContextPath() + "/admin/dashboard?error=StudentNotFound");
-                }
+            if (rowsUpdated > 0) {
+                request.setAttribute("success", "Student " + newStatus.toLowerCase() + " successfully.");
+            } else {
+                request.setAttribute("error", "Failed to update student status.");
             }
-        } catch (NumberFormatException e) {
-            response.sendRedirect(request.getContextPath() + "/admin/dashboard?error=InvalidStudentID");
+
         } catch (SQLException e) {
             e.printStackTrace();
-            response.sendRedirect(request.getContextPath() + "/admin/dashboard?error=DatabaseError");
+            request.setAttribute("error", "Database error: " + e.getMessage());
         }
+
+        response.sendRedirect(request.getContextPath() + "/admin/dashboard");
     }
 }

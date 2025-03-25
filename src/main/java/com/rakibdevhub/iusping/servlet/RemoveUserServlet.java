@@ -53,7 +53,7 @@ public class RemoveUserServlet extends HttpServlet {
         try {
             int id = Integer.parseInt(userId);
 
-            try (Connection conn = DatabaseConfig.getConnectionUser(); PreparedStatement stmt = conn.prepareStatement("DELETE FROM " + schema + "." + tableName + " WHERE id = ?")) {
+            try (Connection conn = DatabaseConfig.getConnectionMaster(); PreparedStatement stmt = conn.prepareStatement("DELETE FROM " + schema + "." + tableName + " WHERE id = ?")) {
 
                 stmt.setInt(1, id);
                 stmt.executeUpdate();
